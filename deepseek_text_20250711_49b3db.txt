@@ -1,0 +1,52 @@
+/ai-crop-disease-system
+├── /backend                   # NestJS Backend
+│   ├── /src
+│   │   ├── /auth              # Auth module (JWT, guards)
+│   │   ├── /users             # User management
+│   │   ├── /disease           # Disease detection module
+│   │   ├── /expert            # Plant expert module
+│   │   ├── /storage           # File handling (AWS S3/Firebase)
+│   │   ├── /reports           # PDF report generation
+│   │   ├── common             # Shared utilities
+│   │   │   ├── /decorators    # Custom decorators
+│   │   │   ├── /filters       # Exception filters
+│   │   │   ├── /interceptors  # Response transformers
+│   │   │   └── /middlewares   # Auth/validation middleware
+│   │   ├── config             # Env/config files
+│   │   ├── entities           # TypeORM entities
+│   │   ├── dto                # Data transfer objects
+│   │   └── main.ts            # Entry point
+│   ├── /test                  # Integration/unit tests
+│   └── Dockerfile
+│
+├── /frontend                  # React Native Frontend
+│   ├── /src
+│   │   ├── /assets            # Fonts/images
+│   │   ├── /components
+│   │   │   ├── /ui           # Reusable UI (buttons, cards)
+│   │   │   └── /camera        # Image capture component
+│   │   ├── /screens
+│   │   │   ├── Auth           # Login/registration
+│   │   │   ├── Dashboard      # User home
+│   │   │   ├── Detection      # Disease scan UI
+│   │   │   └── Expert         # Expert review panel
+│   │   ├── /context           # Auth/global state
+│   │   ├── /hooks             # Custom hooks (e.g., useAPI)
+│   │   ├── /navigation        # Stack/tab navigators
+│   │   ├── /services          # API clients
+│   │   ├── /utils             # Formatters/validators
+│   │   └── App.tsx            # Root component
+│   ├── /tests                 # Component/unit tests
+│   └── app.json
+│
+├── /ai-model                  # AI Model Training/Serving
+│   ├── /notebooks             # Jupyter notebooks
+│   ├── /dataset               # Kaggle dataset
+│   ├── model.py               # Training script
+│   └── requirements.txt       # Python dependencies
+│
+├── /docs                      # API docs, wireframes
+├── /scripts                   # Deployment/CI scripts
+├── docker-compose.yml         # Multi-container setup
+├── .gitignore
+└── README.md                  # Project overview
