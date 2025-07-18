@@ -1,0 +1,17 @@
+ | Column             | Type                  | Description                               |
+|---------------------|-----------------------|-------------------------------------------|
+| id                  | UUID (or integer)     | Primary key                               |
+| email               | varchar(255)          | Unique                                    |
+| password            | varchar(255)          | Nullable if using social login            |
+| name                | varchar(255)          |                                           |
+| createdAt           | timestamp             | Default: current_timestamp                |
+| updatedAt           | timestamp             | Default: current_timestamp on update      |
+| is_verified         | boolean               | Default: false                            |
+| verification_token  | varchar(255)          | Nullable, for email verification          |
+| password_reset_toke | varchar(255)          | Nullable                                  |
+| reset_token_expires | timestamp             | Nullable                                  |
+| profile_image       | varchar(512)          | Nullable, URL to image                    |
+| phone               | varchar(20)           | Nullable                                  |
+| address             | text                  | Nullable                                  |
+| socialProvider      | varchar(50)           | Nullable (e.g., 'google', 'facebook')     |
+| socialId            | varchar(255)          | Nullable, unique per provider             |
