@@ -1,35 +1,33 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
+import { hashPassword } from 'src/common/helpers/password.helper';
 import { Repository } from 'typeorm';
 import { CreateSocialUserDto, CreateUserDto } from './dtos/create-user.dto';
-import { User } from './entities/user.entity';
+import { Users } from './entities/users.entity';
+import { UsersRepository } from './repositories/users.repository';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    @InjectRepository(Users)
+    private userRepository: Repository<Users>,
+    private readonly usersRepository: UsersRepository,
   ) {}
-
-  private async hashPassword(password: string): Promise<string> {
-    const saltRounds = 10;
-    return bcrypt.hash(password, saltRounds);
-  }
 
   /**
    * Create a new user with email/password
    **/
-  private async create(createUserDto: CreateUserDto): Promise<User> {
+  private async create(createUserDto: CreateUserDto): Promise<Users> {
     // No need to validate here; already validated by ValidationPipe!
-    const existingUser = await this.userRepository.findOne({
-      where: { email: createUserDto.email },
-    });
+    const existingUser = await this.usersRepository.findByEmail(
+      createUserDto.email,
+    );
+
     if (existingUser) {
       throw new ConflictException('User already exists');
     }
 
-    const hashedPassword = await this.hashPassword(createUserDto.password);
+    const hashedPassword = await hashPassword(createUserDto.password);
 
     const user = this.userRepository.create({
       ...createUserDto,
@@ -46,7 +44,7 @@ export class UsersService {
 
   async createSocialUser(
     createSocialUserDto: CreateSocialUserDto,
-  ): Promise<User> {
+  ): Promise<Users> {
     // No need to validate here; already validated by ValidationPipe!
     const existingUser = await this.userRepository.findOne({
       where: {

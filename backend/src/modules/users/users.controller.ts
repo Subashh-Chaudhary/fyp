@@ -30,15 +30,7 @@ export class UsersController {
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.register(createUserDto);
-    return {
-      status: 'success',
-      statusCode: HttpStatus.CREATED,
-      message: 'User created successfully',
-      data: {
-        user,
-      },
-      meta: {},
-    };
+    return { data: user, message: 'User created successfully' };
   }
 
   @Get('user/:id')

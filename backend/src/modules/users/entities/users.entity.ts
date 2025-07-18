@@ -7,9 +7,15 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class User {
+export class Users {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ length: 255 })
+  name: string;
+
+  @Column({ length: 20, nullable: true })
+  phone: string;
 
   @Column({ unique: true, length: 255 })
   email: string;
@@ -17,14 +23,17 @@ export class User {
   @Column({ length: 255, nullable: true })
   password: string;
 
-  @Column({ length: 255 })
-  name: string;
+  @Column({ type: 'text', nullable: true })
+  address: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  created_at: Date;
+  @Column({ length: 512, nullable: true })
+  profile_image: string;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  updated_at: Date;
+  @Column({ name: 'socialProvider', length: 50, nullable: true })
+  social_provider: string;
+
+  @Column({ name: 'socialId', length: 255, nullable: true })
+  social_id: string;
 
   @Column({ default: false })
   is_verified: boolean;
@@ -38,18 +47,9 @@ export class User {
   @Column({ nullable: true })
   reset_token_expires: Date;
 
-  @Column({ length: 512, nullable: true })
-  profile_image: string;
+  @CreateDateColumn({ type: 'timestamp' })
+  created_at: Date;
 
-  @Column({ length: 20, nullable: true })
-  phone: string;
-
-  @Column({ type: 'text', nullable: true })
-  address: string;
-
-  @Column({ name: 'socialProvider', length: 50, nullable: true })
-  social_provider: string;
-
-  @Column({ name: 'socialId', length: 255, nullable: true })
-  social_id: string;
+  @UpdateDateColumn({ type: 'timestamp' })
+  updated_at: Date;
 }
