@@ -11,7 +11,7 @@ export default registerAs(
     password: process.env.DB_PASSWORD, // TODO: change to env variable
     database: process.env.DB_NAME, // TODO: change to env variable
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: process.env.NODE_ENV !== 'production',
+    synchronize: false, // Disable auto-synchronization to prevent schema conflicts
     logging: process.env.NODE_ENV === 'development',
     migrations: [__dirname + '/migrations/*{.ts,.js}'],
     migrationsRun: process.env.DB_RUN_MIGRATIONS === 'true',

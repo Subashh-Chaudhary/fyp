@@ -29,7 +29,7 @@ export class UsersService {
    * @param id - User ID
    * @returns User object or throws NotFoundException
    */
-  async findById(id: string): Promise<Users> {
+  async findById(id: number): Promise<Users> {
     const user = await this.userRepository.findOne({ where: { id } });
 
     if (!user) {
@@ -88,7 +88,7 @@ export class UsersService {
    * @param updateData - Data to update
    * @returns Updated user object
    */
-  async updateUser(id: string, updateData: UpdateUserDto): Promise<Users> {
+  async updateUser(id: number, updateData: UpdateUserDto): Promise<Users> {
     const user = await this.findById(id);
 
     // Check if email is being updated and if it already exists
@@ -98,17 +98,20 @@ export class UsersService {
       });
 
       if (existingUser) {
-        throw new ConflictException('User with this email already exists');
+        throw new ConflictException('Email already exists');
       }
     }
 
-    // If password is being updated, hash it
+    // Hash password if it's being updated
     if (updateData.password) {
       updateData.password = await hashPassword(updateData.password);
     }
 
-    Object.assign(user, updateData);
-    return this.userRepository.save(user);
+    // Update user
+    await this.userRepository.update(id, updateData);
+
+    // Return updated user
+    return this.findById(id);
   }
 
   /**
@@ -116,7 +119,7 @@ export class UsersService {
    * @param id - User ID
    * @returns Success message
    */
-  async deleteUser(id: string): Promise<{ message: string }> {
+  async deleteUser(id: number): Promise<{ message: string }> {
     const user = await this.findById(id);
     await this.userRepository.remove(user);
 
@@ -124,7 +127,7 @@ export class UsersService {
   }
 
   /**
-   * Find user by social ID and provider
+   * Find user by social provider and social ID
    * @param provider - Social provider (e.g., 'google', 'facebook')
    * @param socialId - Social ID from the provider
    * @returns User object or undefined if not found
@@ -133,23 +136,23 @@ export class UsersService {
     provider: string,
     socialId: string,
   ): Promise<Users | undefined> {
-    return this.usersRepository.findBySocialId(provider, socialId);
+    const user = await this.userRepository.findOne({
+      where: { social_provider: provider, social_id: socialId },
+    });
+    return user || undefined;
   }
 
   /**
-   * Create user from social login
+   * Create a new social user
    * @param profile - Social user profile data
    * @returns Created user object
    */
   async createSocialUser(profile: CreateSocialUserDto): Promise<Users> {
-    // Check if email is already registered with password
-    const emailUser = await this.usersRepository.findByEmail(profile.email);
-    if (emailUser?.password) {
-      throw new ConflictException('Email already registered with password');
-    }
-
-    return this.usersRepository.createSocialUser({
+    const user = this.userRepository.create({
       ...profile,
+      is_verified: true, // Social users are typically verified
     });
+
+    return this.userRepository.save(user);
   }
 }

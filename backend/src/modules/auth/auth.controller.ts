@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import { UserRole } from 'src/common/enums/user-role.enum';
 import { ResponseHelper } from 'src/common/helpers/response.helper';
 import { GoogleAuthRequest } from 'src/common/interfaces/auth.interface';
 import { AuthService } from './auth.service';
@@ -26,7 +25,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   /**
-   * Register a new expert user with email and password
+   * Register a new user with email and password
    * @param registerDto - User registration data
    * @param req - Request object for path and method
    * @returns JWT token and user data
@@ -40,7 +39,6 @@ export class AuthController {
         {
           user: result.user,
           access_token: result.access_token,
-          type: result.type,
         },
         'User registered successfully',
         HttpStatus.CREATED,
@@ -102,56 +100,53 @@ export class AuthController {
   }
 
   /**
-   * Initiates Google OAuth flow
-   * This route will redirect to Google for authentication
+   * Initiate Google OAuth login
+   * @returns Redirects to Google OAuth
    */
   @Get('google')
   @UseGuards(AuthGuard('google'))
   googleLogin() {
-    // This method will not be called directly
-    // The AuthGuard will handle the redirect to Google
-    return { message: 'Redirecting to Google...' };
+    // This will redirect to Google OAuth
   }
 
   /**
-   * Google OAuth callback endpoint
-   * Handles the callback from Google after successful authentication
+   * Google OAuth callback
+   * @param req - Request object containing user data from Google
+   * @returns JWT token and user data
    */
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   googleLoginCallback(@Req() req: GoogleAuthRequest) {
     try {
-      // Generate JWT token for the authenticated user
+      const { user } = req;
       const token = this.authService.generateToken({
-        id: req.user.id,
-        email: req.user.email,
-        name: req.user.name,
-        user_type: UserRole.FARMER, // Default to farmer for social auth
-        social_provider: req.user.social_provider,
-        social_id: req.user.social_id,
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        social_provider: 'google',
+        social_id: user.social_id,
       });
 
-      // Return success response with token
       return ResponseHelper.success(
         {
-          token,
           user: {
-            id: req.user.id,
-            email: req.user.email,
-            name: req.user.name,
-            social_provider: req.user.social_provider,
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            social_provider: user.social_provider,
+            social_id: user.social_id,
           },
+          access_token: token,
         },
-        'Google authentication successful',
+        'Google login successful',
         HttpStatus.OK,
         req.url,
         req.method,
       );
-    } catch (error) {
-      console.error('Google OAuth callback error:', error);
+    } catch {
       throw new HttpException(
         ResponseHelper.error(
-          'Authentication failed',
+          'Google login failed',
           'Internal server error',
           HttpStatus.INTERNAL_SERVER_ERROR,
           req.url,

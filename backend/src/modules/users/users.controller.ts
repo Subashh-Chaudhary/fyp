@@ -59,7 +59,10 @@ export class UsersController {
    * @returns User details
    */
   @Get('user/:id')
-  async getUserById(@Param('id') id: string, @Res() res: Response) {
+  async getUserById(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
     const user = await this.usersService.findById(id);
 
     // Remove password from response
@@ -85,7 +88,7 @@ export class UsersController {
    */
   @Put('user/:id')
   async updateUser(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
     @Res() res: Response,
   ) {
@@ -112,8 +115,12 @@ export class UsersController {
    * @returns Success message
    */
   @Delete('user/:id')
-  async deleteUser(@Param('id') id: string, @Res() res: Response) {
+  async deleteUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
     const result = await this.usersService.deleteUser(id);
+
     const response = ResponseHelper.success(
       result,
       'User deleted successfully',
@@ -125,14 +132,14 @@ export class UsersController {
   }
 
   /**
-   * Get current user profile (requires authentication)
-   * @param req - Request object with user
+   * Get current user profile
+   * @param req - Request object containing user ID from JWT
    * @param res - Response object
    * @returns Current user profile
    */
-  @Get('user/profile/me')
+  @Get('profile')
   async getProfile(
-    @Request() req: ExpressRequest & { user: { id: string } },
+    @Request() req: ExpressRequest & { user: { id: number } },
     @Res() res: Response,
   ) {
     const user = await this.usersService.findById(req.user.id);
@@ -145,22 +152,22 @@ export class UsersController {
       userWithoutPassword,
       'Profile retrieved successfully',
       HttpStatus.OK,
-      '/user/profile/me',
+      '/profile',
       'GET',
     );
     return res.status(response.statusCode).json(response);
   }
 
   /**
-   * Update current user profile (requires authentication)
-   * @param req - Request object with user
+   * Update current user profile
+   * @param req - Request object containing user ID from JWT
    * @param updateData - Update data
    * @param res - Response object
    * @returns Updated user profile
    */
-  @Put('user/profile/me')
+  @Put('profile')
   async updateProfile(
-    @Request() req: ExpressRequest & { user: { id: string } },
+    @Request() req: ExpressRequest & { user: { id: number } },
     @Body() updateData: UpdateUserDto,
     @Res() res: Response,
   ) {
@@ -174,7 +181,7 @@ export class UsersController {
       userWithoutPassword,
       'Profile updated successfully',
       HttpStatus.OK,
-      '/user/profile/me',
+      '/profile',
       'PUT',
     );
     return res.status(response.statusCode).json(response);

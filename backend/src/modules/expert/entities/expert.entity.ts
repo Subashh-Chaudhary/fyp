@@ -1,4 +1,3 @@
-import { UserRole } from 'src/common/enums/user-role.enum';
 import {
   Column,
   CreateDateColumn,
@@ -9,14 +8,11 @@ import {
 
 @Entity()
 export class Experts {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ length: 255 })
   name: string;
-
-  @Column({ length: 20, nullable: true })
-  phone: string;
 
   @Column({ unique: true, length: 255 })
   email: string;
@@ -24,24 +20,20 @@ export class Experts {
   @Column({ length: 255, nullable: true })
   password: string;
 
+  @Column({ length: 20, nullable: true })
+  phone: string;
+
   @Column({ type: 'text', nullable: true })
   address: string;
 
   @Column({ length: 512, nullable: true })
   profile_image: string;
 
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    default: UserRole.EXPERT,
-  })
-  user_type: UserRole;
+  @Column({ type: 'text', nullable: true })
+  qualification: string;
 
-  @Column({ name: 'socialProvider', length: 50, nullable: true })
-  social_provider: string;
-
-  @Column({ name: 'socialId', length: 255, nullable: true })
-  social_id: string;
+  @Column({ length: 512, nullable: true })
+  qualification_docs: string;
 
   @Column({ default: false })
   is_verified: boolean;
@@ -49,33 +41,17 @@ export class Experts {
   @Column({ length: 255, nullable: true })
   verification_token: string;
 
-  @Column({ name: 'password_reset_toke', length: 255, nullable: true })
+  @Column({ length: 255, nullable: true })
   password_reset_token: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   reset_token_expires: Date;
 
-  // Expert-specific fields
+  @Column({ length: 50, nullable: true })
+  social_provider: string;
+
   @Column({ length: 255, nullable: true })
-  specialization: string;
-
-  @Column({ type: 'int', nullable: true })
-  experience_years: number;
-
-  @Column({ type: 'text', nullable: true })
-  qualifications: string;
-
-  @Column({ length: 100, nullable: true })
-  license_number: string;
-
-  @Column({ default: true })
-  is_available: boolean;
-
-  @Column({ type: 'decimal', precision: 3, scale: 2, default: 0.0 })
-  rating: number;
-
-  @Column({ type: 'int', default: 0 })
-  total_cases: number;
+  social_id: string;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

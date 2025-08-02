@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UserRole } from '../../common/enums/user-role.enum';
 import { hashPassword } from '../../common/helpers/password.helper';
 import { UsersRepository } from '../../modules/users/repositories/users.repository';
 
@@ -38,7 +37,7 @@ export class AdminSeeder {
       // Check if admin already exists
       const existingAdmin = await this.usersRepository.findByEmail(adminEmail);
 
-      if (existingAdmin && existingAdmin.user_type === UserRole.ADMIN) {
+      if (existingAdmin) {
         console.log('✅ Admin user already exists, skipping seed');
         return;
       }
@@ -50,7 +49,6 @@ export class AdminSeeder {
         name: adminName || 'System Administrator',
         email: adminEmail,
         password: hashedPassword,
-        user_type: UserRole.ADMIN,
         is_verified: true, // Admin is pre-verified
         phone: adminPhone || '+1234567890',
         address: adminAddress || 'System Address',

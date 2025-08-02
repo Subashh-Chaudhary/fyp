@@ -1,8 +1,6 @@
 import {
   IsEmail,
-  IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
@@ -10,28 +8,6 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { UserRole } from 'src/common/enums/user-role.enum';
-
-// Expert-specific profile data
-export class ExpertProfileDto {
-  @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  specialization?: string;
-
-  @IsOptional()
-  @IsNumber()
-  experience_years?: number;
-
-  @IsOptional()
-  @IsString()
-  qualifications?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  license_number?: string;
-}
 
 /**
  * DTO for user registration
@@ -64,8 +40,4 @@ export class RegisterDto {
   @IsOptional()
   @IsUrl({}, { message: 'Please provide a valid URL for profile image' })
   profile_image?: string;
-
-  @IsNotEmpty({ message: 'User type is required' })
-  @IsEnum(UserRole, { message: 'User type must be either farmer or expert' })
-  user_type: UserRole;
 }

@@ -54,7 +54,10 @@ export class ExpertController {
    * @returns Expert details
    */
   @Get('expert/:id')
-  async getExpertById(@Param('id') id: string, @Res() res: Response) {
+  async getExpertById(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
     const expert = await this.expertService.findById(id);
     const response = ResponseHelper.success(
       expert,
@@ -75,7 +78,7 @@ export class ExpertController {
    */
   @Put('expert/:id')
   async updateExpert(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateExpertDto: UpdateExpertDto,
     @Res() res: Response,
   ) {
@@ -97,7 +100,10 @@ export class ExpertController {
    * @returns Success message
    */
   @Delete('expert/:id')
-  async deleteExpert(@Param('id') id: string, @Res() res: Response) {
+  async deleteExpert(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
     const result = await this.expertService.deleteExpert(id);
     const response = ResponseHelper.success(
       result,
@@ -110,14 +116,14 @@ export class ExpertController {
   }
 
   /**
-   * Get current expert profile (requires authentication)
-   * @param req - Request object with user
+   * Get current expert profile
+   * @param req - Request object containing expert ID from JWT
    * @param res - Response object
    * @returns Current expert profile
    */
-  @Get('expert/profile/me')
+  @Get('expert/profile')
   async getProfile(
-    @Request() req: ExpressRequest & { user: { id: string } },
+    @Request() req: ExpressRequest & { user: { id: number } },
     @Res() res: Response,
   ) {
     const expert = await this.expertService.findById(req.user.id);
@@ -125,22 +131,22 @@ export class ExpertController {
       expert,
       'Profile retrieved successfully',
       HttpStatus.OK,
-      '/expert/profile/me',
+      '/expert/profile',
       'GET',
     );
     return res.status(response.statusCode).json(response);
   }
 
   /**
-   * Update current expert profile (requires authentication)
-   * @param req - Request object with user
+   * Update current expert profile
+   * @param req - Request object containing expert ID from JWT
    * @param updateData - Update data
    * @param res - Response object
    * @returns Updated expert profile
    */
-  @Put('expert/profile/me')
+  @Put('expert/profile')
   async updateProfile(
-    @Request() req: ExpressRequest & { user: { id: string } },
+    @Request() req: ExpressRequest & { user: { id: number } },
     @Body() updateData: UpdateExpertDto,
     @Res() res: Response,
   ) {
@@ -152,7 +158,7 @@ export class ExpertController {
       expert,
       'Profile updated successfully',
       HttpStatus.OK,
-      '/expert/profile/me',
+      '/expert/profile',
       'PUT',
     );
     return res.status(response.statusCode).json(response);

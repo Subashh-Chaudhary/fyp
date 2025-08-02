@@ -1,14 +1,11 @@
 import {
   IsBoolean,
   IsEmail,
-  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
   Matches,
-  Max,
   MaxLength,
-  Min,
   MinLength,
 } from 'class-validator';
 
@@ -37,27 +34,14 @@ export class UpdateExpertDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(255)
-  specialization?: string;
+  qualification?: string;
 
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(50)
-  experience_years?: number;
-
-  @IsOptional()
-  @IsString()
-  qualifications?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  license_number?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  is_available?: boolean;
+  @IsUrl(
+    {},
+    { message: 'Please provide a valid URL for qualification documents' },
+  )
+  qualification_docs?: string;
 
   @IsOptional()
   @IsBoolean()
