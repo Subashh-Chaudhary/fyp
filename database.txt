@@ -1,9 +1,9 @@
  | Column             | Type                  | Description                               |
 |---------------------|-----------------------|-------------------------------------------|
 | id                  | UUID (or integer)     | Primary key                               |
-| email               | varchar(255)          | Unique                                    |
-| password            | varchar(255)          | Nullable if using social login            |
-| name                | varchar(255)          |                                           |
+| name                | varchar(255)          | Unique                                    |
+| email               | varchar(255)          | Unique           |
+| password            | varchar(255)          | Nullable if using social login                                         |
 | createdAt           | timestamp             | Default: current_timestamp                |
 | updatedAt           | timestamp             | Default: current_timestamp on update      |
 | is_verified         | boolean               | Default: false                            |

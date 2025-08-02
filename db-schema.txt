@@ -1,0 +1,10 @@
+	
+table should include 
+1. users(farmer details)
+2. experts (plant doctor details)
+3. crops (scanned/uploaded crop detail like crop_id, image_url(from cloudinary))
+4. diseases(ai generated disease)
+5. solutions(solution for the specific disease)
+6. feedbacks(expert verification with feedback (optional))
+7. reports(user specif crop, disease, solutions, feedback from experts report) in printable format
+8. histories(user specific history)

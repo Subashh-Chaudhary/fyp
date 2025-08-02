@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CreateSocialUserDto } from '../dtos/create-user.dto';
 import { Users } from '../entities/users.entity';
 
 @Injectable()
@@ -15,6 +16,15 @@ export class UsersRepository {
     return user || undefined;
   }
 
+  async create(userData: Partial<Users>): Promise<Users> {
+    const user = this.userRepository.create(userData);
+    return this.userRepository.save(user);
+  }
+
+  async save(user: Users): Promise<Users> {
+    return this.userRepository.save(user);
+  }
+
   async findBySocialId(
     provider: string,
     socialId: string,
@@ -25,12 +35,8 @@ export class UsersRepository {
     return user || undefined;
   }
 
-  async create(userData: Partial<Users>): Promise<Users> {
-    const user = this.userRepository.create(userData);
-    return this.userRepository.save(user);
-  }
-
-  async save(user: Users): Promise<Users> {
+  async createSocialUser(profile: CreateSocialUserDto): Promise<Users> {
+    const user = this.userRepository.create(profile);
     return this.userRepository.save(user);
   }
 }

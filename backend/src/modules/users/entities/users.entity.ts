@@ -1,3 +1,4 @@
+import { UserRole } from 'src/common/enums/user-role.enum';
 import {
   Column,
   CreateDateColumn,
@@ -29,6 +30,13 @@ export class Users {
   @Column({ length: 512, nullable: true })
   profile_image: string;
 
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.ADMIN,
+  })
+  user_type: UserRole;
+
   @Column({ name: 'socialProvider', length: 50, nullable: true })
   social_provider: string;
 
@@ -46,6 +54,19 @@ export class Users {
 
   @Column({ nullable: true })
   reset_token_expires: Date;
+
+  // Farmer-specific fields (only used when user_type is FARMER)
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  farm_size: number;
+
+  @Column({ length: 100, nullable: true })
+  farm_type: string;
+
+  @Column({ type: 'point', nullable: true })
+  location_coordinates: string;
+
+  @Column({ type: 'text', array: true, nullable: true })
+  preferred_crops: string[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

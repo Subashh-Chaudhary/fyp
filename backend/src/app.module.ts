@@ -5,11 +5,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import databaseConfig from './config/database.config.';
 import { envValidationSchema } from './config/env.validation';
-import { AuthController } from './modules/auth/auth.controller';
-import { AuthModule } from './modules/auth/auth.module';
-import { AuthService } from './modules/auth/auth.service';
-import { UsersModule } from './modules/users/users.module';
 import { DatabaseService } from './database/database.provider';
+import { AuthModule } from './modules/auth/auth.module';
+import { ExpertModule } from './modules/expert/expert.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -46,9 +45,10 @@ import { DatabaseService } from './database/database.provider';
       },
     }),
     UsersModule,
+    ExpertModule,
     AuthModule,
   ],
-  controllers: [AppController, AuthController],
-  providers: [AppService, AuthService, DatabaseService],
+  controllers: [AppController],
+  providers: [AppService, DatabaseService],
 })
 export class AppModule {}
