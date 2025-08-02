@@ -1,20 +1,20 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
-  HttpCode,
   HttpStatus,
   Param,
-  Patch,
+  ParseIntPipe,
+  Put,
   Query,
-  Req,
+  Request,
+  Res,
 } from '@nestjs/common';
-import { Request } from 'express';
-import { UserRole } from 'src/common/enums/user-role.enum';
+import { Request as ExpressRequest, Response } from 'express';
 import { ResponseHelper } from 'src/common/helpers/response.helper';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { Users } from './entities/users.entity';
 import { UsersService } from './users.service';
 
 /**
@@ -22,7 +22,7 @@ import { UsersService } from './users.service';
  * Handles all user management operations (CRUD)
  * Note: Authentication and registration routes are handled in the auth module
  */
-@Controller()
+@Controller('')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -30,192 +30,153 @@ export class UsersController {
    * Get all users with pagination
    * @param page - Page number (default: 1)
    * @param limit - Number of items per page (default: 10)
-   * @param req - Request object for path and method
+   * @param res - Response object
    * @returns Paginated list of users
    */
   @Get('users')
-  async findAll(
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = '10',
-    @Req() req: Request,
+  async getAllUsers(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10,
+    @Res() res: Response,
   ) {
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
-
-    const result = await this.usersService.findAll(pageNum, limitNum);
-
-    return ResponseHelper.paginated(
+    const result = await this.usersService.findAll(page, limit);
+    const response = ResponseHelper.paginated(
       result.users,
       result.page,
       result.limit,
       result.total,
       'Users retrieved successfully',
-      req.url,
-      req.method,
+      '/users',
+      'GET',
     );
-  }
-
-  /**
-   * Get users by type (admin, farmer)
-   * @param type - User type
-   * @param page - Page number (default: 1)
-   * @param limit - Number of items per page (default: 10)
-   * @param req - Request object for path and method
-   * @returns Paginated list of users by type
-   */
-  @Get('users/type/:type')
-  async findByType(
-    @Param('type') type: string,
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = '10',
-    @Req() req: Request,
-  ) {
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
-
-    const result = await this.usersService.findByType(
-      type as UserRole,
-      pageNum,
-      limitNum,
-    );
-
-    return ResponseHelper.paginated(
-      result.users,
-      result.page,
-      result.limit,
-      result.total,
-      `${type} users retrieved successfully`,
-      req.url,
-      req.method,
-    );
-  }
-
-  /**
-   * Get farmer statistics
-   * @param req - Request object for path and method
-   * @returns Farmer statistics
-   */
-  @Get('farmers/statistics')
-  async getFarmerStatistics(@Req() req: Request) {
-    const statistics = await this.usersService.getFarmerStatistics();
-
-    return ResponseHelper.success(
-      statistics,
-      'Farmer statistics retrieved successfully',
-      HttpStatus.OK,
-      req.url,
-      req.method,
-    );
-  }
-
-  /**
-   * Update farmer profile
-   * @param id - Farmer ID
-   * @param updateData - Farmer profile data to update
-   * @param req - Request object for path and method
-   * @returns Updated farmer user
-   */
-  @Patch('farmers/:id/profile')
-  async updateFarmerProfile(
-    @Param('id') id: string,
-    @Body() updateData: Partial<Users>,
-    @Req() req: Request,
-  ) {
-    const user = await this.usersService.updateFarmerProfile(id, updateData);
-
-    return ResponseHelper.success(
-      user,
-      'Farmer profile updated successfully',
-      HttpStatus.OK,
-      req.url,
-      req.method,
-    );
-  }
-
-  /**
-   * Get user statistics
-   * @param req - Request object for path and method
-   * @returns User statistics
-   */
-  @Get('users/statistics')
-  async getStatistics(@Req() req: Request) {
-    const statistics = await this.usersService.getStatistics();
-
-    return ResponseHelper.success(
-      statistics,
-      'User statistics retrieved successfully',
-      HttpStatus.OK,
-      req.url,
-      req.method,
-    );
+    return res.status(response.statusCode).json(response);
   }
 
   /**
    * Get user by ID
    * @param id - User ID
-   * @param req - Request object for path and method
-   * @returns User object
+   * @param res - Response object
+   * @returns User details
    */
   @Get('user/:id')
-  async findOne(@Param('id') id: string, @Req() req: Request) {
+  async getUserById(@Param('id') id: string, @Res() res: Response) {
     const user = await this.usersService.findById(id);
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
 
-    return ResponseHelper.success(
+    const response = ResponseHelper.success(
       userWithoutPassword,
       'User retrieved successfully',
       HttpStatus.OK,
-      req.url,
-      req.method,
+      `/user/${id}`,
+      'GET',
     );
+    return res.status(response.statusCode).json(response);
   }
 
   /**
    * Update user by ID
    * @param id - User ID
-   * @param updateData - Data to update
-   * @param req - Request object for path and method
-   * @returns Updated user object
+   * @param updateUserDto - Update data
+   * @param res - Response object
+   * @returns Updated user
    */
-  @Patch('user/:id')
-  async update(
+  @Put('user/:id')
+  async updateUser(
     @Param('id') id: string,
-    @Body() updateData: UpdateUserDto,
-    @Req() req: Request,
+    @Body() updateUserDto: UpdateUserDto,
+    @Res() res: Response,
   ) {
-    const user = await this.usersService.updateUser(id, updateData);
+    const user = await this.usersService.updateUser(id, updateUserDto);
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
 
-    return ResponseHelper.success(
+    const response = ResponseHelper.success(
       userWithoutPassword,
       'User updated successfully',
       HttpStatus.OK,
-      req.url,
-      req.method,
+      `/user/${id}`,
+      'PUT',
     );
+    return res.status(response.statusCode).json(response);
   }
 
   /**
    * Delete user by ID
    * @param id - User ID
-   * @param req - Request object for path and method
+   * @param res - Response object
    * @returns Success message
    */
   @Delete('user/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(@Param('id') id: string, @Req() req: Request) {
-    await this.usersService.deleteUser(id);
-
-    return ResponseHelper.noContent(
+  async deleteUser(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.usersService.deleteUser(id);
+    const response = ResponseHelper.success(
+      result,
       'User deleted successfully',
-      req.url,
-      req.method,
+      HttpStatus.OK,
+      `/user/${id}`,
+      'DELETE',
     );
+    return res.status(response.statusCode).json(response);
+  }
+
+  /**
+   * Get current user profile (requires authentication)
+   * @param req - Request object with user
+   * @param res - Response object
+   * @returns Current user profile
+   */
+  @Get('user/profile/me')
+  async getProfile(
+    @Request() req: ExpressRequest & { user: { id: string } },
+    @Res() res: Response,
+  ) {
+    const user = await this.usersService.findById(req.user.id);
+
+    // Remove password from response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+
+    const response = ResponseHelper.success(
+      userWithoutPassword,
+      'Profile retrieved successfully',
+      HttpStatus.OK,
+      '/user/profile/me',
+      'GET',
+    );
+    return res.status(response.statusCode).json(response);
+  }
+
+  /**
+   * Update current user profile (requires authentication)
+   * @param req - Request object with user
+   * @param updateData - Update data
+   * @param res - Response object
+   * @returns Updated user profile
+   */
+  @Put('user/profile/me')
+  async updateProfile(
+    @Request() req: ExpressRequest & { user: { id: string } },
+    @Body() updateData: UpdateUserDto,
+    @Res() res: Response,
+  ) {
+    const user = await this.usersService.updateUser(req.user.id, updateData);
+
+    // Remove password from response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+
+    const response = ResponseHelper.success(
+      userWithoutPassword,
+      'Profile updated successfully',
+      HttpStatus.OK,
+      '/user/profile/me',
+      'PUT',
+    );
+    return res.status(response.statusCode).json(response);
   }
 }

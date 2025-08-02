@@ -54,11 +54,15 @@ export class ExpertService {
     page: number = 1,
     limit: number = 10,
   ): Promise<{
-    experts: Experts[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
+    items: Experts[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
   }> {
     const skip = (page - 1) * limit;
 
@@ -69,13 +73,25 @@ export class ExpertService {
     });
 
     const totalPages = Math.ceil(total / limit);
+    const hasNext = page < totalPages;
+    const hasPrev = page > 1;
+
+    console.log('experts', experts);
+    console.log('total', total);
+    console.log('totalPages', totalPages);
+    console.log('hasNext', hasNext);
+    console.log('hasPrev', hasPrev);
 
     return {
-      experts,
-      total,
-      page,
-      limit,
-      totalPages,
+      items: experts,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext,
+        hasPrev,
+      },
     };
   }
 
@@ -205,5 +221,38 @@ export class ExpertService {
       order: { rating: 'DESC' },
       take: limit,
     });
+  }
+
+  /**
+   * Get expert statistics
+   * @returns Expert statistics
+   */
+  async getExpertStats(): Promise<{
+    total_experts: number;
+    available_experts: number;
+    average_rating: number;
+    total_cases: number;
+  }> {
+    const totalExperts = await this.expertRepository.count();
+    const availableExperts = await this.expertRepository.count({
+      where: { is_available: true },
+    });
+
+    const avgRatingResult = await this.expertRepository
+      .createQueryBuilder('expert')
+      .select('AVG(expert.rating)', 'avgRating')
+      .getRawOne<{ avgRating: string }>();
+
+    const totalCasesResult = await this.expertRepository
+      .createQueryBuilder('expert')
+      .select('SUM(expert.total_cases)', 'totalCases')
+      .getRawOne<{ totalCases: string }>();
+
+    return {
+      total_experts: totalExperts,
+      available_experts: availableExperts,
+      average_rating: parseFloat(avgRatingResult?.avgRating || '0'),
+      total_cases: parseInt(totalCasesResult?.totalCases || '0'),
+    };
   }
 }
