@@ -2,7 +2,7 @@ import { Request } from 'express';
 
 // Interface for user objects from different tables
 export interface UserWithPassword {
-  id: number;
+  id: string | number;
   email: string;
   name: string;
   password: string;
@@ -11,7 +11,7 @@ export interface UserWithPassword {
 
 // Interface for authenticated user from Google OAuth
 export interface AuthenticatedUser {
-  id: number;
+  id: string | number;
   email: string;
   name: string;
   social_provider: string;
@@ -23,4 +23,13 @@ export interface AuthenticatedUser {
 // Extended request interface for Google OAuth
 export interface GoogleAuthRequest extends Request {
   user: AuthenticatedUser;
+}
+
+// Interface for user data in JWT payload
+export interface IUserData {
+  id: string | number;
+  email: string;
+  name: string;
+  social_provider?: string;
+  social_id?: string;
 }

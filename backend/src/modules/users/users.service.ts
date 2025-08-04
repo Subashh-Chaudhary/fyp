@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -29,7 +30,7 @@ export class UsersService {
    * @param id - User ID
    * @returns User object or throws NotFoundException
    */
-  async findById(id: number): Promise<Users> {
+  async findById(id: string): Promise<Users> {
     const user = await this.userRepository.findOne({ where: { id } });
 
     if (!user) {
@@ -88,13 +89,29 @@ export class UsersService {
    * @param updateData - Data to update
    * @returns Updated user object
    */
-  async updateUser(id: number, updateData: UpdateUserDto): Promise<Users> {
+  async updateUser(id: string, updateData: UpdateUserDto): Promise<Users> {
+    // Check if updateData is empty or contains no valid data
+    if (!updateData || Object.keys(updateData).length === 0) {
+      throw new BadRequestException('No data provided for update');
+    }
+
+    // Filter out undefined, null, and empty string values
+    const filteredData: Partial<UpdateUserDto> = Object.fromEntries(
+      Object.entries(updateData).filter(
+        ([, value]) => value !== undefined && value !== null && value !== '',
+      ),
+    ) as Partial<UpdateUserDto>;
+
+    if (Object.keys(filteredData).length === 0) {
+      throw new BadRequestException('No valid data provided for update');
+    }
+
     const user = await this.findById(id);
 
     // Check if email is being updated and if it already exists
-    if (updateData.email && updateData.email !== user.email) {
+    if (filteredData.email && filteredData.email !== user.email) {
       const existingUser = await this.userRepository.findOne({
-        where: { email: updateData.email },
+        where: { email: filteredData.email },
       });
 
       if (existingUser) {
@@ -103,12 +120,12 @@ export class UsersService {
     }
 
     // Hash password if it's being updated
-    if (updateData.password) {
-      updateData.password = await hashPassword(updateData.password);
+    if (filteredData.password) {
+      filteredData.password = await hashPassword(filteredData.password);
     }
 
     // Update user
-    await this.userRepository.update(id, updateData);
+    await this.userRepository.update(id, filteredData);
 
     // Return updated user
     return this.findById(id);
@@ -119,7 +136,7 @@ export class UsersService {
    * @param id - User ID
    * @returns Success message
    */
-  async deleteUser(id: number): Promise<{ message: string }> {
+  async deleteUser(id: string): Promise<{ message: string }> {
     const user = await this.findById(id);
     await this.userRepository.remove(user);
 
@@ -148,6 +165,20 @@ export class UsersService {
    * @returns Created user object
    */
   async createSocialUser(profile: CreateSocialUserDto): Promise<Users> {
+    // Check if profile is empty or contains no valid data
+    if (!profile || Object.keys(profile).length === 0) {
+      throw new BadRequestException('No data provided for user creation');
+    }
+
+    // Check if all provided values are undefined or null
+    const hasValidData = Object.values(profile).some(
+      (value) => value !== undefined && value !== null && value !== '',
+    );
+
+    if (!hasValidData) {
+      throw new BadRequestException('No valid data provided for user creation');
+    }
+
     const user = this.userRepository.create({
       ...profile,
       is_verified: true, // Social users are typically verified

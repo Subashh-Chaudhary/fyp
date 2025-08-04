@@ -59,10 +59,7 @@ export class UsersController {
    * @returns User details
    */
   @Get('user/:id')
-  async getUserById(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
+  async getUserById(@Param('id') id: string, @Res() res: Response) {
     const user = await this.usersService.findById(id);
 
     // Remove password from response
@@ -88,7 +85,7 @@ export class UsersController {
    */
   @Put('user/:id')
   async updateUser(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
     @Res() res: Response,
   ) {
@@ -115,10 +112,7 @@ export class UsersController {
    * @returns Success message
    */
   @Delete('user/:id')
-  async deleteUser(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
+  async deleteUser(@Param('id') id: string, @Res() res: Response) {
     const result = await this.usersService.deleteUser(id);
 
     const response = ResponseHelper.success(
@@ -139,7 +133,7 @@ export class UsersController {
    */
   @Get('profile')
   async getProfile(
-    @Request() req: ExpressRequest & { user: { id: number } },
+    @Request() req: ExpressRequest & { user: { id: string } },
     @Res() res: Response,
   ) {
     const user = await this.usersService.findById(req.user.id);
@@ -167,7 +161,7 @@ export class UsersController {
    */
   @Put('profile')
   async updateProfile(
-    @Request() req: ExpressRequest & { user: { id: number } },
+    @Request() req: ExpressRequest & { user: { id: string } },
     @Body() updateData: UpdateUserDto,
     @Res() res: Response,
   ) {

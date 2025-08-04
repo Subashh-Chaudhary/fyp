@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Experts } from '../expert/entities/expert.entity';
+import { ExpertModule } from '../expert/expert.module';
 import { Users } from '../users/entities/users.entity';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
@@ -17,8 +19,9 @@ import { GoogleStrategy } from './strategies/google-oauth.strategy';
       secret: process.env.JWT_SECRET || 'jaiVei3ae1ongau7uophiin6aezeivoy',
       signOptions: { expiresIn: '1h' },
     }),
-    TypeOrmModule.forFeature([Users]), // Add this to make Users repository available
+    TypeOrmModule.forFeature([Users, Experts]), // Add both Users and Experts repositories
     UsersModule, // Import UsersModule to access UsersService
+    ExpertModule, // Import ExpertModule to access ExpertService
   ],
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy],

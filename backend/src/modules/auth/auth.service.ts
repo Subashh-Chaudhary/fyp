@@ -10,26 +10,14 @@ import {
   comparePasswords,
   hashPassword,
 } from 'src/common/helpers/password.helper';
+import { IUserData, UserWithPassword } from 'src/common/interfaces';
 import { Repository } from 'typeorm';
+import { Experts } from '../expert/entities/expert.entity';
+import { ExpertService } from '../expert/expert.service';
 import { Users } from '../users/entities/users.entity';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dtos/login.dto';
 import { RegisterDto } from './dtos/register.dto';
-
-interface IUserData {
-  id: number;
-  email: string;
-  name: string;
-  social_provider?: string;
-  social_id?: string;
-}
-
-interface UserWithPassword {
-  id: number;
-  email: string;
-  name: string;
-  password: string;
-}
 
 /**
  * Auth Service
@@ -40,8 +28,11 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
+    private expertService: ExpertService,
     @InjectRepository(Users)
     private usersRepository: Repository<Users>,
+    @InjectRepository(Experts)
+    private expertsRepository: Repository<Experts>,
   ) {}
 
   /**
@@ -53,20 +44,45 @@ export class AuthService {
     user: Record<string, unknown>;
     access_token: string;
   }> {
-    // Check if email already exists
+    // Check if email already exists in both tables
     const existingUser = await this.usersService.findByEmail(registerDto.email);
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+    const existingExpert = await this.expertService.findByEmail(
+      registerDto.email,
+    );
+
+    if (registerDto.user_type === 'expert') {
+      if (existingExpert) {
+        throw new ConflictException('Expert with this email already exists');
+      }
     }
 
-    // Create user in users table
-    const user = await this.createUser(registerDto);
+    if (registerDto.user_type === 'farmer') {
+      if (existingUser) {
+        throw new ConflictException('User with this email already exists');
+      }
+    }
+
+    if (registerDto.password !== registerDto.confirm_password) {
+      throw new BadRequestException(
+        'Password and confirm password do not match',
+      );
+    }
+
+    let user: Users | Experts;
+
+    // Create user based on user_type
+    if (registerDto.user_type === 'expert') {
+      user = await this.createExpert(registerDto);
+    } else {
+      user = await this.createUser(registerDto);
+    }
 
     // Generate JWT token for the new user
     const payload = {
       sub: user.id,
       email: user.email,
       name: user.name,
+      user_type: registerDto.user_type,
     };
 
     const access_token = this.jwtService.sign(payload);
@@ -105,6 +121,29 @@ export class AuthService {
   }
 
   /**
+   * Create a new expert in experts table
+   * @param userData - User data
+   * @returns Created expert
+   */
+  private async createExpert(userData: RegisterDto): Promise<Experts> {
+    // Hash the password
+    const hashedPassword = await hashPassword(userData.password);
+
+    // Create expert entity
+    const expert = this.expertsRepository.create({
+      name: userData.name,
+      email: userData.email,
+      password: hashedPassword,
+      phone: userData.phone,
+      address: userData.address,
+      profile_image: userData.profile_image,
+      is_verified: false,
+    });
+
+    return this.expertsRepository.save(expert);
+  }
+
+  /**
    * Authenticate user with email and password
    * @param loginDto - Login credentials
    * @returns Object containing user data and access token
@@ -112,7 +151,7 @@ export class AuthService {
   async login(
     loginDto: LoginDto,
   ): Promise<{ user: Record<string, unknown>; access_token: string }> {
-    // Find user by email
+    // Find user by email in both tables
     const user = await this.findUserByEmail(loginDto.email);
     if (!user) {
       throw new BadRequestException('Invalid credentials');
@@ -162,6 +201,17 @@ export class AuthService {
         email: user.email,
         name: user.name,
         password: user.password,
+      };
+    }
+
+    // Check in experts table
+    const expert = await this.expertService.findByEmail(email);
+    if (expert) {
+      return {
+        id: expert.id,
+        email: expert.email,
+        name: expert.name,
+        password: expert.password,
       };
     }
 

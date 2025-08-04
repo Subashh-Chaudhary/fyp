@@ -54,10 +54,7 @@ export class ExpertController {
    * @returns Expert details
    */
   @Get('expert/:id')
-  async getExpertById(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
+  async getExpertById(@Param('id') id: string, @Res() res: Response) {
     const expert = await this.expertService.findById(id);
     const response = ResponseHelper.success(
       expert,
@@ -78,7 +75,7 @@ export class ExpertController {
    */
   @Put('expert/:id')
   async updateExpert(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateExpertDto: UpdateExpertDto,
     @Res() res: Response,
   ) {
@@ -100,10 +97,7 @@ export class ExpertController {
    * @returns Success message
    */
   @Delete('expert/:id')
-  async deleteExpert(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
+  async deleteExpert(@Param('id') id: string, @Res() res: Response) {
     const result = await this.expertService.deleteExpert(id);
     const response = ResponseHelper.success(
       result,
@@ -123,7 +117,7 @@ export class ExpertController {
    */
   @Get('expert/profile')
   async getProfile(
-    @Request() req: ExpressRequest & { user: { id: number } },
+    @Request() req: ExpressRequest & { user: { id: string } },
     @Res() res: Response,
   ) {
     const expert = await this.expertService.findById(req.user.id);
@@ -146,7 +140,7 @@ export class ExpertController {
    */
   @Put('expert/profile')
   async updateProfile(
-    @Request() req: ExpressRequest & { user: { id: number } },
+    @Request() req: ExpressRequest & { user: { id: string } },
     @Body() updateData: UpdateExpertDto,
     @Res() res: Response,
   ) {

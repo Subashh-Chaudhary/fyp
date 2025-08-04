@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -20,9 +21,9 @@ export class ExpertService {
    * @param id - Expert ID
    * @returns Expert object or throws NotFoundException
    */
-  async findById(id: number): Promise<Experts> {
+  async findById(id: string): Promise<Experts> {
     const expert = await this.expertRepository.findOne({
-      where: { id },
+      where: { id: id },
     });
 
     if (!expert) {
@@ -96,9 +97,23 @@ export class ExpertService {
    * @returns Updated expert object
    */
   async updateExpert(
-    id: number,
+    id: string,
     updateData: UpdateExpertDto,
   ): Promise<Experts> {
+    // Check if updateData is empty or contains no valid data
+    if (!updateData || Object.keys(updateData).length === 0) {
+      throw new BadRequestException('No data provided for update');
+    }
+
+    // Check if all provided values are undefined or null
+    const hasValidData = Object.values(updateData).some(
+      (value) => value !== undefined && value !== null && value !== '',
+    );
+
+    if (!hasValidData) {
+      throw new BadRequestException('No valid data provided for update');
+    }
+
     const expert = await this.findById(id);
 
     // Check if email is being updated and if it already exists
@@ -124,7 +139,7 @@ export class ExpertService {
    * @param id - Expert ID
    * @returns Success message
    */
-  async deleteExpert(id: number): Promise<{ message: string }> {
+  async deleteExpert(id: string): Promise<{ message: string }> {
     const expert = await this.findById(id);
     await this.expertRepository.remove(expert);
 
@@ -153,6 +168,22 @@ export class ExpertService {
    * @returns Created expert object
    */
   async createExpert(expertData: Partial<Experts>): Promise<Experts> {
+    // Check if expertData is empty or contains no valid data
+    if (!expertData || Object.keys(expertData).length === 0) {
+      throw new BadRequestException('No data provided for expert creation');
+    }
+
+    // Check if all provided values are undefined or null
+    const hasValidData = Object.values(expertData).some(
+      (value) => value !== undefined && value !== null && value !== '',
+    );
+
+    if (!hasValidData) {
+      throw new BadRequestException(
+        'No valid data provided for expert creation',
+      );
+    }
+
     const expert = this.expertRepository.create(expertData);
     return this.expertRepository.save(expert);
   }

@@ -6,9 +6,10 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { IApiResponse } from '../interfaces/interface';
+import { IApiResponse } from '../interfaces/api-response.interface';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
@@ -16,18 +17,22 @@ export class ResponseInterceptor implements NestInterceptor {
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<IApiResponse<unknown>> {
-    const statusCode =
-      (context.switchToHttp().getResponse().statusCode as number) ??
-      HttpStatus.OK;
+    const response = context.switchToHttp().getResponse<Response>();
+    const request = context.switchToHttp().getRequest<Request>();
+    const statusCode = response?.statusCode ?? HttpStatus.OK;
     const message = this.getDefaultMessage(statusCode);
 
     return next.handle().pipe(
       map((data: IApiResponse<unknown>) => ({
-        status: 'success',
+        success: true,
         statusCode,
         message: data.message || message,
         data: data.data,
-        meta: data.meta || {},
+        meta: data.meta || {
+          timestamp: new Date().toISOString(),
+          path: request?.url,
+          method: request?.method,
+        },
       })),
     );
   }

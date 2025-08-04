@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -28,6 +29,16 @@ export class RegisterDto {
   @IsString({ message: 'Password must be a string' })
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password: string;
+
+  @IsNotEmpty({ message: 'Confirm password is required' })
+  @IsString({ message: 'Confirm password must be a string' })
+  confirm_password: string;
+
+  @IsNotEmpty({ message: 'User type is required' })
+  @IsIn(['farmer', 'expert'], {
+    message: 'User type must be either farmer or expert',
+  })
+  user_type: 'farmer' | 'expert';
 
   @IsOptional()
   @Matches(/^[0-9]+$/, { message: 'Phone must contain only numbers' })
