@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { useAppStore } from '../../store';
+import { useAuthStore } from '../../src/store';
 import { colors, commonStyles } from '../../styles';
 
 /**
@@ -21,7 +21,7 @@ export default function RegisterScreen() {
   const [userType, setUserType] = useState<'farmer' | 'expert'>('farmer');
   const [isLoading, setIsLoading] = useState(false);
 
-  const setUser = useAppStore((state) => state.setUser);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleEmailAuth = async () => {
     if (!name || !email || !password || !confirmPassword) {

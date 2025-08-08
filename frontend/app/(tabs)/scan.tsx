@@ -5,7 +5,7 @@ import { Alert, Image, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { useAppStore } from '../../store';
+import { useAppStore } from '../../src/store';
 import { colors, commonStyles, TAB_BAR_HEIGHT } from '../../styles';
 
 /**

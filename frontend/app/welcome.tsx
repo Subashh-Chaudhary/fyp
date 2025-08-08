@@ -5,7 +5,7 @@ import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { useAppStore } from '../store';
+import { useAppStore, useAuthStore } from '../src/store';
 import { colors, commonStyles } from '../styles';
 
 /**
@@ -13,9 +13,9 @@ import { colors, commonStyles } from '../styles';
  * Introduces the app features and guides users through initial setup
  */
 export default function WelcomeScreen() {
-  const user = useAppStore((state) => state.user);
-  const setUser = useAppStore((state) => state.setUser);
-  const clearAllData = useAppStore((state) => state.clearAllData);
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const clearAllData = useAppStore((state) => state.resetApp);
 
   useEffect(() => {
     // Check if user is already logged in

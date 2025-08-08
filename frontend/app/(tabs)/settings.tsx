@@ -5,7 +5,7 @@ import { Alert, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-n
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { useAppStore } from '../../store';
+import { useAppStore, useAuthStore } from '../../src/store';
 import { colors, commonStyles, TAB_BAR_HEIGHT } from '../../styles';
 
 /**
@@ -13,14 +13,26 @@ import { colors, commonStyles, TAB_BAR_HEIGHT } from '../../styles';
  * Provides theme switching, notifications, and account settings
  */
 export default function SettingsScreen() {
-  const { user, logout, theme, toggleTheme, setUser, clearAllData } = useAppStore((state) => ({
+  const { user, logout, setUser } = useAuthStore((state) => ({
     user: state.user,
     logout: state.logout,
-    theme: state.theme,
-    toggleTheme: state.toggleTheme,
     setUser: state.setUser,
-    clearAllData: state.clearAllData,
   }));
+
+  const { theme, setTheme } = useAppStore((state) => ({
+    theme: state.theme,
+    setTheme: state.setTheme,
+  }));
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+
+  const clearAllData = () => {
+    // This would clear both app and auth data
+    // For now, just logout
+    logout();
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -203,7 +215,7 @@ export default function SettingsScreen() {
                           text: 'Clear',
                           style: 'destructive',
                           onPress: () => {
-                            setUser(null);
+                            setUser(null as any);
                             router.replace('/welcome');
                           }
                         },

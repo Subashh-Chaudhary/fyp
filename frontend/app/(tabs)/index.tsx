@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { dateUtils } from '../../lib/utils';
-import { useAppStore } from '../../store';
+import { useAppStore, useAuthStore } from '../../src/store';
 import { colors, commonStyles, TAB_BAR_HEIGHT } from '../../styles';
 
 /**
@@ -13,7 +13,7 @@ import { colors, commonStyles, TAB_BAR_HEIGHT } from '../../styles';
  * Shows quick stats, recent scans, and quick actions
  */
 export default function HomeScreen() {
-  const user = useAppStore((state) => state.user);
+  const user = useAuthStore((state) => state.user);
   const scanHistory = useAppStore((state) => state.scanHistory);
 
   // Calculate quick stats

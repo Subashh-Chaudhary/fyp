@@ -4,7 +4,7 @@ import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '../../components/ui/Card';
 import { dateUtils } from '../../lib/utils';
-import { useAppStore } from '../../store';
+import { useAppStore } from '../../src/store';
 import { colors, commonStyles, TAB_BAR_HEIGHT } from '../../styles';
 
 /**
