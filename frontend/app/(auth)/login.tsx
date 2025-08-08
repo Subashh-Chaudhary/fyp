@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -81,132 +81,147 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.bgNeutral50]}>
-      <View style={[commonStyles.flex1, commonStyles.px6, commonStyles.py4]}>
-        {/* Header */}
-        <View style={[commonStyles.itemsCenter, commonStyles.mb8]}>
-          <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 80, height: 80, backgroundColor: colors.primary[100], borderRadius: 40 }, commonStyles.mb4]}>
-            <Ionicons name="leaf" size={36} color={colors.primary[500]} />
-          </View>
-
-          <Text style={[commonStyles.text2xl, commonStyles.fontBold, commonStyles.textPrimary, commonStyles.textCenter, commonStyles.mb2]}>
-            Welcome Back
-          </Text>
-
-          <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter]}>
-            Sign in to continue to your account
-          </Text>
-        </View>
-
-        {/* Login Form */}
-        <Card variant="default" padding="large">
-          <Input
-            label="Email"
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            icon="mail"
-          />
-
-          <Input
-            label="Password"
-            placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            icon="lock-closed"
-          />
-
-          <TouchableOpacity
-            style={[commonStyles.itemsEnd, commonStyles.mb4]}
-            onPress={() => router.push('/(auth)/forgot-password')}
+      <KeyboardAvoidingView
+        style={commonStyles.flex1}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            style={commonStyles.flex1}
+            contentContainerStyle={[commonStyles.px6, commonStyles.py4]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            <Text style={[commonStyles.textSm, { color: colors.primary[500] }]}>
-              Forgot Password?
-            </Text>
-          </TouchableOpacity>
+            {/* Header */}
+            <View style={[commonStyles.itemsCenter, commonStyles.mb8]}>
+              <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 80, height: 80, backgroundColor: colors.primary[100], borderRadius: 40 }, commonStyles.mb4]}>
+                <Ionicons name="leaf" size={36} color={colors.primary[500]} />
+              </View>
 
-          <Button
-            title="Sign In"
-            onPress={handleEmailAuth}
-            variant="primary"
-            size="large"
-            loading={isLoading}
-            icon={<Ionicons name="log-in" size={20} color="#ffffff" />}
-          />
-        </Card>
-
-        {/* Register Link */}
-        <View style={[commonStyles.itemsCenter, commonStyles.mb3]}>
-          <Text style={[commonStyles.textSm, commonStyles.textSecondary, commonStyles.textCenter, commonStyles.mb2]}>
-            Don&apos;t have an account? <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: colors.primary[600] }]} onPress={() => router.push('/(auth)/register')}>Create Account</Text>
-          </Text>
-        </View>
-
-        {/* Social Login */}
-        <View style={[commonStyles.mb6]}>
-          <Text style={[commonStyles.textBase, commonStyles.fontMedium, commonStyles.textSecondary, commonStyles.textCenter, commonStyles.mb4]}>
-            Or continue with
-          </Text>
-
-          <View style={[commonStyles.flexRow, { gap: 12, paddingHorizontal: 20 }]}>
-            <TouchableOpacity
-              style={[
-                commonStyles.flex1,
-                commonStyles.flexRow,
-                commonStyles.itemsCenter,
-                commonStyles.justifyCenter,
-                commonStyles.py3,
-                commonStyles.px4,
-                {
-                  backgroundColor: '#DB4437', // Google red
-                  borderRadius: 8,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 2,
-                  elevation: 2,
-                },
-              ]}
-              onPress={() => handleSocialAuth('google')}
-              disabled={isLoading}
-            >
-              <Ionicons name="logo-google" size={20} color="#ffffff" />
-              <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: '#ffffff' }, commonStyles.ml2]}>
-                Google
+              <Text style={[commonStyles.text2xl, commonStyles.fontBold, commonStyles.textPrimary, commonStyles.textCenter, commonStyles.mb2]}>
+                Welcome Back
               </Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                commonStyles.flex1,
-                commonStyles.flexRow,
-                commonStyles.itemsCenter,
-                commonStyles.justifyCenter,
-                commonStyles.py3,
-                commonStyles.px4,
-                {
-                  backgroundColor: '#4267B2', // Facebook blue
-                  borderRadius: 8,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 2,
-                  elevation: 2,
-                },
-              ]}
-              onPress={() => handleSocialAuth('facebook')}
-              disabled={isLoading}
-            >
-              <Ionicons name="logo-facebook" size={20} color="#ffffff" />
-              <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: '#ffffff' }, commonStyles.ml2]}>
-                Facebook
+              <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter]}>
+                Sign in to continue to your account
               </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+            </View>
+
+            {/* Login Form */}
+            <Card variant="default" padding="large">
+              <Input
+                label="Email"
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                icon="mail"
+                returnKeyType="next"
+              />
+
+              <Input
+                label="Password"
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                icon="lock-closed"
+                returnKeyType="done"
+              />
+
+              <TouchableOpacity
+                style={[commonStyles.itemsEnd, commonStyles.mb4]}
+                onPress={() => router.push('/(auth)/forgot-password')}
+              >
+                <Text style={[commonStyles.textSm, { color: colors.primary[500] }]}>
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
+
+              <Button
+                title="Sign In"
+                onPress={handleEmailAuth}
+                variant="primary"
+                size="large"
+                loading={isLoading}
+                icon={<Ionicons name="log-in" size={20} color="#ffffff" />}
+              />
+            </Card>
+
+            {/* Register Link */}
+            <View style={[commonStyles.itemsCenter, commonStyles.mb3]}>
+              <Text style={[commonStyles.textSm, commonStyles.textSecondary, commonStyles.textCenter, commonStyles.mb2]}>
+                Don&apos;t have an account? <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: colors.primary[600] }]} onPress={() => router.push('/(auth)/register')}>Create Account</Text>
+              </Text>
+            </View>
+
+            {/* Social Login */}
+            <View style={[commonStyles.mb6]}>
+              <Text style={[commonStyles.textBase, commonStyles.fontMedium, commonStyles.textSecondary, commonStyles.textCenter, commonStyles.mb4]}>
+                Or continue with
+              </Text>
+
+              <View style={[commonStyles.flexRow, { gap: 12, paddingHorizontal: 20 }]}>
+                <TouchableOpacity
+                  style={[
+                    commonStyles.flex1,
+                    commonStyles.flexRow,
+                    commonStyles.itemsCenter,
+                    commonStyles.justifyCenter,
+                    commonStyles.py3,
+                    commonStyles.px4,
+                    {
+                      backgroundColor: '#DB4437', // Google red
+                      borderRadius: 8,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 2,
+                      elevation: 2,
+                    },
+                  ]}
+                  onPress={() => handleSocialAuth('google')}
+                  disabled={isLoading}
+                >
+                  <Ionicons name="logo-google" size={20} color="#ffffff" />
+                  <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: '#ffffff' }, commonStyles.ml2]}>
+                    Google
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    commonStyles.flex1,
+                    commonStyles.flexRow,
+                    commonStyles.itemsCenter,
+                    commonStyles.justifyCenter,
+                    commonStyles.py3,
+                    commonStyles.px4,
+                    {
+                      backgroundColor: '#4267B2', // Facebook blue
+                      borderRadius: 8,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 2,
+                      elevation: 2,
+                    },
+                  ]}
+                  onPress={() => handleSocialAuth('facebook')}
+                  disabled={isLoading}
+                >
+                  <Ionicons name="logo-facebook" size={20} color="#ffffff" />
+                  <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: '#ffffff' }, commonStyles.ml2]}>
+                    Facebook
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
