@@ -1,4 +1,4 @@
-import { ImageInfo } from '../types';
+import { ImageInfo } from '../src/interfaces';
 
 // Image utility functions
 export const imageUtils = {

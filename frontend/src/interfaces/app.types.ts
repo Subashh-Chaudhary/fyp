@@ -1,4 +1,4 @@
-import { ScanResult, Theme } from '../../types';
+import { ScanResult, Theme } from './entities.types';
 
 // App State Interface
 export interface AppState {

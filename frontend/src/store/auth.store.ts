@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User } from '../../types';
+import { User } from '../interfaces';
 import { AuthResponse } from '../interfaces/api.types';
 import { AuthState } from '../interfaces/auth.types';
 import { AuthSecureStorage } from '../utils/secureStorage';

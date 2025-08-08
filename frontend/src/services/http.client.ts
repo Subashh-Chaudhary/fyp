@@ -4,7 +4,7 @@ import axios, {
   AxiosRequestConfig,
   AxiosResponse
 } from 'axios';
-import { API_CONFIG, getApiConfig } from '../config/api.config';
+import { API_CONFIG, ERROR_MESSAGES, getApiConfig } from '../config/api.config';
 import { ApiError, ApiResponse, RequestOptions } from '../interfaces/api.types';
 import { AuthSecureStorage } from '../utils/secureStorage';
 
@@ -277,7 +277,7 @@ export class HttpClient {
       return error.message;
     }
 
-    return API_CONFIG.ERROR_MESSAGES.UNKNOWN_ERROR;
+    return ERROR_MESSAGES.UNKNOWN_ERROR;
   }
 
   // Check if error should not be retried

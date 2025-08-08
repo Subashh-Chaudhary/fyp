@@ -1,23 +1,23 @@
-import { Crop, Disease, User } from '../../types';
-import { API_CONFIG } from '../config/api.config';
+import { API_ENDPOINTS } from '../config/api.config';
+import { Crop, Disease, User } from '../interfaces';
 import {
-    ApiResponse,
-    AuthResponse,
-    BatchUploadRequest,
-    ChangePasswordRequest,
-    CropSearchRequest,
-    DashboardStats,
-    DiseaseSearchRequest,
-    ForgotPasswordRequest,
-    LoginRequest,
-    PaginatedResponse,
-    PaginationParams,
-    RegisterRequest,
-    ResetPasswordRequest,
-    ScanResultResponse,
-    ScanStats,
-    UpdateProfileRequest,
-    UploadImageRequest,
+  ApiResponse,
+  AuthResponse,
+  BatchUploadRequest,
+  ChangePasswordRequest,
+  CropSearchRequest,
+  DashboardStats,
+  DiseaseSearchRequest,
+  ForgotPasswordRequest,
+  LoginRequest,
+  PaginatedResponse,
+  PaginationParams,
+  RegisterRequest,
+  ResetPasswordRequest,
+  ScanResultResponse,
+  ScanStats,
+  UpdateProfileRequest,
+  UploadImageRequest,
 } from '../interfaces/api.types';
 import { httpClient } from './http.client';
 
@@ -25,15 +25,15 @@ import { httpClient } from './http.client';
 export class ApiService {
   // Authentication Services
   async login(credentials: LoginRequest): Promise<ApiResponse<AuthResponse>> {
-    return httpClient.post<AuthResponse>(API_CONFIG.ENDPOINTS.AUTH.LOGIN, credentials);
+    return httpClient.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
   }
 
   async register(userData: RegisterRequest): Promise<ApiResponse<AuthResponse>> {
-    return httpClient.post<AuthResponse>(API_CONFIG.ENDPOINTS.AUTH.REGISTER, userData);
+    return httpClient.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, userData);
   }
 
   async logout(): Promise<ApiResponse<void>> {
-    const response = await httpClient.post<void>(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
+    const response = await httpClient.post<void>(API_ENDPOINTS.AUTH.LOGOUT);
     if (response.success) {
       httpClient.clearAuthTokens();
     }
@@ -41,36 +41,36 @@ export class ApiService {
   }
 
   async refreshToken(): Promise<ApiResponse<AuthResponse>> {
-    return httpClient.post<AuthResponse>(API_CONFIG.ENDPOINTS.AUTH.REFRESH);
+    return httpClient.post<AuthResponse>(API_ENDPOINTS.AUTH.REFRESH);
   }
 
   async forgotPassword(data: ForgotPasswordRequest): Promise<ApiResponse<void>> {
-    return httpClient.post<void>(API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD, data);
+    return httpClient.post<void>(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, data);
   }
 
   async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<void>> {
-    return httpClient.post<void>(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD, data);
+    return httpClient.post<void>(API_ENDPOINTS.AUTH.RESET_PASSWORD, data);
   }
 
   async verifyEmail(token: string): Promise<ApiResponse<void>> {
-    return httpClient.post<void>(API_CONFIG.ENDPOINTS.AUTH.VERIFY_EMAIL, { token });
+    return httpClient.post<void>(API_ENDPOINTS.AUTH.VERIFY_EMAIL, { token });
   }
 
   // User Services
   async getUserProfile(): Promise<ApiResponse<User>> {
-    return httpClient.get<User>(API_CONFIG.ENDPOINTS.USER.PROFILE);
+    return httpClient.get<User>(API_ENDPOINTS.USER.PROFILE);
   }
 
   async updateProfile(data: UpdateProfileRequest): Promise<ApiResponse<User>> {
-    return httpClient.put<User>(API_CONFIG.ENDPOINTS.USER.UPDATE_PROFILE, data);
+    return httpClient.put<User>(API_ENDPOINTS.USER.UPDATE_PROFILE, data);
   }
 
   async changePassword(data: ChangePasswordRequest): Promise<ApiResponse<void>> {
-    return httpClient.post<void>(API_CONFIG.ENDPOINTS.USER.CHANGE_PASSWORD, data);
+    return httpClient.post<void>(API_ENDPOINTS.USER.CHANGE_PASSWORD, data);
   }
 
   async deleteAccount(): Promise<ApiResponse<void>> {
-    return httpClient.delete<void>(API_CONFIG.ENDPOINTS.USER.DELETE_ACCOUNT);
+    return httpClient.delete<void>(API_ENDPOINTS.USER.DELETE_ACCOUNT);
   }
 
   // Scan Services
@@ -96,7 +96,7 @@ export class ApiService {
     }
 
     return httpClient.post<ScanResultResponse>(
-      API_CONFIG.ENDPOINTS.SCAN.UPLOAD,
+      API_ENDPOINTS.SCAN.UPLOAD,
       formData,
       {
         headers: {
@@ -133,7 +133,7 @@ export class ApiService {
     }
 
     return httpClient.post<ScanResultResponse[]>(
-      API_CONFIG.ENDPOINTS.SCAN.BATCH_UPLOAD,
+      API_ENDPOINTS.SCAN.BATCH_UPLOAD,
       formData,
       {
         headers: {
@@ -144,7 +144,7 @@ export class ApiService {
   }
 
   async getScanResult(scanId: string): Promise<ApiResponse<ScanResultResponse>> {
-    const url = API_CONFIG.ENDPOINTS.SCAN.RESULT.replace(':id', scanId);
+    const url = API_ENDPOINTS.SCAN.RESULT.replace(':id', scanId);
     return httpClient.get<ScanResultResponse>(url);
   }
 
@@ -158,12 +158,12 @@ export class ApiService {
       });
     }
 
-    const url = `${API_CONFIG.ENDPOINTS.SCAN.HISTORY}?${queryParams.toString()}`;
+    const url = `${API_ENDPOINTS.SCAN.HISTORY}?${queryParams.toString()}`;
     return httpClient.get<ScanResultResponse[]>(url) as Promise<PaginatedResponse<ScanResultResponse>>;
   }
 
   async deleteScan(scanId: string): Promise<ApiResponse<void>> {
-    const url = API_CONFIG.ENDPOINTS.SCAN.DELETE.replace(':id', scanId);
+    const url = API_ENDPOINTS.SCAN.DELETE.replace(':id', scanId);
     return httpClient.delete<void>(url);
   }
 
@@ -178,12 +178,12 @@ export class ApiService {
       });
     }
 
-    const url = `${API_CONFIG.ENDPOINTS.CROPS.LIST}?${queryParams.toString()}`;
+    const url = `${API_ENDPOINTS.CROPS.LIST}?${queryParams.toString()}`;
     return httpClient.get<Crop[]>(url) as Promise<PaginatedResponse<Crop>>;
   }
 
   async getCropDetail(cropId: string): Promise<ApiResponse<Crop>> {
-    const url = API_CONFIG.ENDPOINTS.CROPS.DETAIL.replace(':id', cropId);
+    const url = API_ENDPOINTS.CROPS.DETAIL.replace(':id', cropId);
     return httpClient.get<Crop>(url);
   }
 
@@ -195,7 +195,7 @@ export class ApiService {
       }
     });
 
-    const url = `${API_CONFIG.ENDPOINTS.CROPS.SEARCH}?${queryParams.toString()}`;
+    const url = `${API_ENDPOINTS.CROPS.SEARCH}?${queryParams.toString()}`;
     return httpClient.get<Crop[]>(url) as Promise<PaginatedResponse<Crop>>;
   }
 
@@ -210,12 +210,12 @@ export class ApiService {
       });
     }
 
-    const url = `${API_CONFIG.ENDPOINTS.DISEASES.LIST}?${queryParams.toString()}`;
+    const url = `${API_ENDPOINTS.DISEASES.LIST}?${queryParams.toString()}`;
     return httpClient.get<Disease[]>(url) as Promise<PaginatedResponse<Disease>>;
   }
 
   async getDiseaseDetail(diseaseId: string): Promise<ApiResponse<Disease>> {
-    const url = API_CONFIG.ENDPOINTS.DISEASES.DETAIL.replace(':id', diseaseId);
+    const url = API_ENDPOINTS.DISEASES.DETAIL.replace(':id', diseaseId);
     return httpClient.get<Disease>(url);
   }
 
@@ -229,7 +229,7 @@ export class ApiService {
       });
     }
 
-    const url = `${API_CONFIG.ENDPOINTS.DISEASES.BY_CROP.replace(':cropId', cropId)}?${queryParams.toString()}`;
+    const url = `${API_ENDPOINTS.DISEASES.BY_CROP.replace(':cropId', cropId)}?${queryParams.toString()}`;
     return httpClient.get<Disease[]>(url) as Promise<PaginatedResponse<Disease>>;
   }
 
@@ -241,21 +241,21 @@ export class ApiService {
       }
     });
 
-    const url = `${API_CONFIG.ENDPOINTS.DISEASES.SEARCH}?${queryParams.toString()}`;
+    const url = `${API_ENDPOINTS.DISEASES.SEARCH}?${queryParams.toString()}`;
     return httpClient.get<Disease[]>(url) as Promise<PaginatedResponse<Disease>>;
   }
 
   // Analytics Services
   async getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
-    return httpClient.get<DashboardStats>(API_CONFIG.ENDPOINTS.ANALYTICS.DASHBOARD);
+    return httpClient.get<DashboardStats>(API_ENDPOINTS.ANALYTICS.DASHBOARD);
   }
 
   async getScanStats(): Promise<ApiResponse<ScanStats>> {
-    return httpClient.get<ScanStats>(API_CONFIG.ENDPOINTS.ANALYTICS.SCAN_STATS);
+    return httpClient.get<ScanStats>(API_ENDPOINTS.ANALYTICS.SCAN_STATS);
   }
 
   async getCropStats(): Promise<ApiResponse<any>> {
-    return httpClient.get<any>(API_CONFIG.ENDPOINTS.ANALYTICS.CROP_STATS);
+    return httpClient.get<any>(API_ENDPOINTS.ANALYTICS.CROP_STATS);
   }
 }
 

@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from '../constants';
-import { ApiResponse, User } from '../types';
+import { ApiResponse, User } from '../src/interfaces';
 
 // Authentication response type
 interface AuthResponse {
@@ -118,11 +118,11 @@ class ApiClient {
 
   // Crop and disease methods
   async getCrops() {
-    return this.request(API_ENDPOINTS.CROPS);
+    return this.request(API_ENDPOINTS.CROPS.LIST);
   }
 
   async getDiseases(cropId?: string) {
-    const endpoint = cropId ? `${API_ENDPOINTS.DISEASES}?cropId=${cropId}` : API_ENDPOINTS.DISEASES;
+    const endpoint = cropId ? API_ENDPOINTS.DISEASES.BY_CROP.replace(':cropId', cropId) : API_ENDPOINTS.DISEASES.LIST;
     return this.request(endpoint);
   }
 }

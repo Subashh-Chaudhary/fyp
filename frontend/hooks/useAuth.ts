@@ -2,8 +2,8 @@ import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { apiClient } from '../lib/api';
 import { validationUtils } from '../lib/utils';
-import { useAppStore } from '../store';
-import { LoginForm, RegisterForm, User } from '../types';
+import { LoginForm, RegisterForm, User } from '../src/interfaces';
+import { useAuthStore } from '../src/store/auth.store';
 
 /**
  * Custom hook for authentication management
@@ -11,9 +11,9 @@ import { LoginForm, RegisterForm, User } from '../types';
  */
 export const useAuth = () => {
   const router = useRouter();
-  const user = useAppStore((state) => state.user);
-  const setUser = useAppStore((state) => state.setUser);
-  const logoutUser = useAppStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const logoutUser = useAuthStore((state) => state.logout);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export const useAuth = () => {
       const response = await apiClient.login(credentials.email, credentials.password);
 
       if (!response.success || !response.data) {
-        throw new Error(response.error || 'Login failed');
+        throw new Error(typeof response.error === 'string' ? response.error : 'Login failed');
       }
 
       // Set user data and token
@@ -89,7 +89,7 @@ export const useAuth = () => {
       );
 
       if (!response.success || !response.data) {
-        throw new Error(response.error || 'Registration failed');
+        throw new Error(typeof response.error === 'string' ? response.error : 'Registration failed');
       }
 
       // Set user data and token

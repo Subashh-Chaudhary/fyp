@@ -1,5 +1,5 @@
-import { User } from '../../types';
 import { AuthResponse } from './api.types';
+import { User } from './entities.types';
 
 // Auth State Interface
 export interface AuthState {

@@ -1,4 +1,4 @@
-import { Crop, Disease, ScanResult, User } from '../../types';
+import { Crop, Disease, ScanResult, User } from './entities.types';
 
 // Base API Response Interface
 export interface ApiResponse<T = any> {

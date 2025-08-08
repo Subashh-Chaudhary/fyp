@@ -1,24 +1,24 @@
 import { useMutation, UseMutationOptions, useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
-import { Crop, Disease, User } from '../../types';
+import { Crop, Disease, User } from '../interfaces';
 import {
-    ApiResponse,
-    AuthResponse,
-    BatchUploadRequest,
-    ChangePasswordRequest,
-    CropSearchRequest,
-    DashboardStats,
-    DiseaseSearchRequest,
-    ForgotPasswordRequest,
-    LoginRequest,
-    MUTATION_KEYS,
-    PaginationParams,
-    QUERY_KEYS,
-    RegisterRequest,
-    ResetPasswordRequest,
-    ScanResultResponse,
-    ScanStats,
-    UpdateProfileRequest,
-    UploadImageRequest,
+  ApiResponse,
+  AuthResponse,
+  BatchUploadRequest,
+  ChangePasswordRequest,
+  CropSearchRequest,
+  DashboardStats,
+  DiseaseSearchRequest,
+  ForgotPasswordRequest,
+  LoginRequest,
+  MUTATION_KEYS,
+  PaginationParams,
+  QUERY_KEYS,
+  RegisterRequest,
+  ResetPasswordRequest,
+  ScanResultResponse,
+  ScanStats,
+  UpdateProfileRequest,
+  UploadImageRequest,
 } from '../interfaces/api.types';
 import { apiService } from '../services/api.service';
 import { httpClient } from '../services/http.client';
