@@ -11,7 +11,6 @@ export const useAuthMiddleware = () => {
 
   useEffect(() => {
     const inAuthGroup = segments[0] === '(auth)';
-    const inTabsGroup = segments[0] === '(tabs)';
 
     // If user is not authenticated and not in auth group, redirect to login
     if (!isAuthenticated && !inAuthGroup) {

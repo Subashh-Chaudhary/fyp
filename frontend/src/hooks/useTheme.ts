@@ -7,9 +7,9 @@ import { useAppStore } from '../store';
 export const useTheme = () => {
   const theme = useAppStore((state) => state.theme);
   const setTheme = useAppStore((state) => state.setTheme);
-  const toggleTheme = useAppStore((state) => state.toggleTheme);
 
   const isDark = theme === 'dark';
+  const toggleTheme = () => setTheme(isDark ? 'light' : 'dark');
 
   const colors = {
     primary: isDark ? '#4ade80' : '#22c55e',

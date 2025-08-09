@@ -151,7 +151,7 @@ export default function WelcomeScreen() {
             <Button
               title="Clear User"
               onPress={() => {
-                setUser(null);
+                setUser(null as any);
                 // Force re-render
                 setTimeout(() => {
                   router.replace('/welcome');
