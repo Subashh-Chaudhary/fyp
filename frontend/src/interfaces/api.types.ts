@@ -40,9 +40,11 @@ export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
-  confirmPassword: string;
-  userType: 'farmer' | 'expert';
-  agreeToTerms: boolean;
+  confirm_password: string;
+  user_type: 'farmer' | 'expert';
+  phone?: string;
+  address?: string;
+  profile_image?: string;
 }
 
 export interface ForgotPasswordRequest {
@@ -57,9 +59,7 @@ export interface ResetPasswordRequest {
 
 export interface AuthResponse {
   user: User;
-  token: string;
-  refreshToken: string;
-  expiresIn: number;
+  access_token: string;
 }
 
 // User Types

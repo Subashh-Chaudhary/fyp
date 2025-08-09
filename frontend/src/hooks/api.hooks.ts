@@ -32,8 +32,8 @@ export const useLogin = (options?: UseMutationOptions<ApiResponse<AuthResponse>,
     mutationFn: (credentials: LoginRequest) => apiService.login(credentials),
     onSuccess: (response) => {
       if (response.success && response.data) {
-        // Set auth tokens
-        httpClient.setAuthTokens(response.data.token, response.data.refreshToken);
+        // Set auth tokens (using access_token for both)
+        httpClient.setAuthTokens(response.data.access_token, response.data.access_token);
 
         // Invalidate and refetch user data
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.USER });
@@ -52,8 +52,8 @@ export const useRegister = (options?: UseMutationOptions<ApiResponse<AuthRespons
     mutationFn: (userData: RegisterRequest) => apiService.register(userData),
     onSuccess: (response) => {
       if (response.success && response.data) {
-        // Set auth tokens
-        httpClient.setAuthTokens(response.data.token, response.data.refreshToken);
+        // Set auth tokens (using access_token for both)
+        httpClient.setAuthTokens(response.data.access_token, response.data.access_token);
 
         // Invalidate and refetch user data
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.USER });

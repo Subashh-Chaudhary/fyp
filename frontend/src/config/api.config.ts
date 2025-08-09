@@ -10,7 +10,7 @@ export const getApiConfig = () => {
   return {
     ...API_CONFIG,
     BASE_URL: isDevelopment
-      ? 'http://localhost:3000/api/v1' // Development
+      ? 'http://localhost:3000/api' // Development - backend runs on port 3000
       : API_CONFIG.BASE_URL, // Production
     TIMEOUT: isDevelopment ? 10000 : API_CONFIG.TIMEOUT,
   };

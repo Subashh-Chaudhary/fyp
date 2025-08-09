@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { useAuthStore } from '../../src/store';
+import { useAuth } from '../../src/hooks';
 import { colors, commonStyles } from '../../styles';
 
 /**
@@ -16,9 +16,8 @@ import { colors, commonStyles } from '../../styles';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
-  const setUser = useAuthStore((state) => state.setUser);
+  const { login, isLoading, error } = useAuth();
 
   const handleEmailAuth = async () => {
     if (!email || !password) {
@@ -26,57 +25,24 @@ export default function LoginScreen() {
       return;
     }
 
-    setIsLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      const newUser = {
-        id: Date.now().toString(),
-        name: 'Demo User',
+    try {
+      await login({
         email,
-        userType: 'farmer' as const,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      setUser(newUser);
-      setIsLoading(false);
-      router.replace('/(tabs)');
-    }, 1500);
+        password,
+      });
+    } catch (err: any) {
+      Alert.alert('Login Failed', err.message || 'Invalid email or password');
+    }
   };
 
   const handleSocialAuth = (provider: 'google' | 'facebook') => {
-    setIsLoading(true);
-
-    // Simulate social authentication
-    setTimeout(() => {
-      const newUser = {
-        id: Date.now().toString(),
-        name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
-        email: `${provider}@example.com`,
-        userType: 'farmer' as const,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      setUser(newUser);
-      setIsLoading(false);
-      router.replace('/(tabs)');
-    }, 1500);
+    // TODO: Implement social authentication
+    Alert.alert('Coming Soon', `${provider.charAt(0).toUpperCase() + provider.slice(1)} authentication will be available soon!`);
   };
 
   const handleDemoLogin = () => {
-    const newUser = {
-      id: '1',
-      name: 'Demo User',
-      email: 'demo@example.com',
-      userType: 'farmer' as const,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setUser(newUser);
-    router.replace('/(tabs)');
+    // TODO: Remove demo login in production
+    Alert.alert('Demo Login', 'Demo login functionality will be removed in production');
   };
 
   return (
@@ -148,6 +114,15 @@ export default function LoginScreen() {
                 loading={isLoading}
                 icon={<Ionicons name="log-in" size={20} color="#ffffff" />}
               />
+
+              {/* Error Display */}
+              {error && (
+                <View style={[commonStyles.mt3, commonStyles.p3, { backgroundColor: colors.danger[50], borderRadius: 8, borderWidth: 1, borderColor: colors.danger[200] }]}>
+                  <Text style={[commonStyles.textSm, { color: colors.danger[600] }]}>
+                    {error}
+                  </Text>
+                </View>
+              )}
             </Card>
 
             {/* Register Link */}

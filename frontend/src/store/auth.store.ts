@@ -17,8 +17,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // Actions
   setAuth: async (authData: AuthResponse) => {
     try {
-      // Store tokens securely
-      await AuthSecureStorage.storeTokens(authData.token, authData.refreshToken);
+      // Store tokens securely (using access_token as both token and refreshToken for now)
+      await AuthSecureStorage.storeTokens(authData.access_token, authData.access_token);
 
       // Store user data securely
       await AuthSecureStorage.storeUserData(JSON.stringify(authData.user));
@@ -26,8 +26,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Update state
       set({
         user: authData.user,
-        token: authData.token,
-        refreshToken: authData.refreshToken,
+        token: authData.access_token,
+        refreshToken: authData.access_token, // Backend doesn't provide separate refresh token yet
         isAuthenticated: true,
         error: null,
       });

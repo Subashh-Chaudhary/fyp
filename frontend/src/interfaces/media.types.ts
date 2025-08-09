@@ -19,5 +19,4 @@ export interface RegisterForm {
   password: string;
   confirmPassword: string;
   userType: 'farmer' | 'expert';
-  agreeToTerms: boolean;
 }

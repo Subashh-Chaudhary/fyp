@@ -1,81 +1,111 @@
 import { Ionicons } from '@expo/vector-icons';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { Alert, Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { useAuthStore } from '../../src/store';
+import { useAuth } from '../../src/hooks';
+import { checkPasswordStrength, getFieldError, hasAnyErrors, RegisterFormData, registerSchema } from '../../src/validation';
 import { colors, commonStyles } from '../../styles';
 
 /**
  * Register screen - User registration
- * Provides email/password registration with user type selection
+ * Provides email/password registration with user type selection and enhanced validation
  */
 export default function RegisterScreen() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [userType, setUserType] = useState<'farmer' | 'expert'>('farmer');
-  const [isLoading, setIsLoading] = useState(false);
+  const { register, isLoading, error } = useAuth();
+  const [passwordStrength, setPasswordStrength] = useState<{
+    strength: 'weak' | 'fair' | 'good' | 'strong';
+    score: number;
+    checks: {
+      length: boolean;
+      lowercase: boolean;
+      uppercase: boolean;
+      number: boolean;
+      special: boolean;
+    };
+    feedback: string[];
+    isValid: boolean;
+  }>({
+    strength: 'weak',
+    score: 0,
+    checks: { length: false, lowercase: false, uppercase: false, number: false, special: false },
+    feedback: [],
+    isValid: false,
+  });
+  const [showPasswordStrength, setShowPasswordStrength] = useState(false);
 
-  const setUser = useAuthStore((state) => state.setUser);
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid, touchedFields }
+  } = useForm<RegisterFormData>({
+    resolver: yupResolver(registerSchema),
+    mode: 'onChange', // Changed to onChange for real-time validation
+    reValidateMode: 'onChange',
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      userType: 'farmer',
+    },
+  });
 
-  const handleEmailAuth = async () => {
-    if (!name || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all required fields');
-      return;
+  const userType = watch('userType') as 'farmer' | 'expert';
+  const currentPassword = watch('password');
+
+  // Monitor password changes for strength indicator
+  React.useEffect(() => {
+    if (currentPassword) {
+      const strength = checkPasswordStrength(currentPassword);
+      setPasswordStrength(strength);
+      setShowPasswordStrength(true);
+    } else {
+      setShowPasswordStrength(false);
     }
+  }, [currentPassword]);
 
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
+  const onSubmit = async (data: RegisterFormData) => {
+    try {
+      // Additional client-side validation before submission
+      if (hasAnyErrors(errors)) {
+        Alert.alert('Validation Error', 'Please fix all errors before submitting.');
+        return;
+      }
+      console.log('Registration data:', data);
+
+      await register({
+        name: data.name.trim(),
+        email: data.email.toLowerCase().trim(),
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        userType: data.userType,
+      });
+    } catch (err: any) {
+      Alert.alert('Registration Failed', err.message || 'An error occurred during registration');
     }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
-      return;
-    }
-
-    setIsLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      const newUser = {
-        id: Date.now().toString(),
-        name,
-        email,
-        userType,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      setUser(newUser);
-      setIsLoading(false);
-      router.replace('/(tabs)');
-    }, 1500);
   };
 
   const handleSocialAuth = (provider: 'google' | 'facebook') => {
-    setIsLoading(true);
+    // TODO: Implement social authentication
+    Alert.alert('Coming Soon', `${provider.charAt(0).toUpperCase() + provider.slice(1)} authentication will be available soon!`);
+  };
 
-    // Simulate social authentication
-    setTimeout(() => {
-      const newUser = {
-        id: Date.now().toString(),
-        name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
-        email: `${provider}@example.com`,
-        userType: 'farmer' as const,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      setUser(newUser);
-      setIsLoading(false);
-      router.replace('/(tabs)');
-    }, 1500);
+  // Helper function to get strength color
+  const getStrengthColor = () => {
+    switch (passwordStrength.strength) {
+      case 'weak': return colors.danger[500];
+      case 'fair': return colors.warning[500];
+      case 'good': return colors.primary[500];
+      case 'strong': return colors.success[500];
+      default: return colors.neutral[400];
+    }
   };
 
   return (
@@ -110,108 +140,237 @@ export default function RegisterScreen() {
             {/* Register Form */}
             <Card variant="default" padding="medium" style={{ marginBottom: 16, marginTop: -10 }}>
               <View style={{ gap: 0 }}>
-                <Input
-                  label="Full Name"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChangeText={setName}
-                  icon="person"
-                  returnKeyType="next"
+                <Controller
+                  control={control}
+                  name="name"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <Input
+                      label="Full Name"
+                      placeholder="Enter your full name"
+                      value={value}
+                      onChangeText={(text) => onChange(text.replace(/[^a-zA-Z\s'-]/g, ''))} // Filter invalid characters
+                      onBlur={onBlur}
+                      icon="person"
+                      returnKeyType="next"
+                      error={getFieldError(errors, 'name')}
+                      autoCapitalize="words"
+                    />
+                  )}
                 />
 
-                <Input
-                  label="Email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  icon="mail"
-                  returnKeyType="next"
+                <Controller
+                  control={control}
+                  name="email"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <Input
+                      label="Email"
+                      placeholder="Enter your email"
+                      value={value}
+                      onChangeText={(text) => onChange(text.toLowerCase().trim())} // Auto-lowercase and trim
+                      onBlur={onBlur}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoComplete="email"
+                      icon="mail"
+                      returnKeyType="next"
+                      error={getFieldError(errors, 'email')}
+                    />
+                  )}
                 />
 
-                <Input
-                  label="Password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  icon="lock-closed"
-                  returnKeyType="next"
+                <Controller
+                  control={control}
+                  name="password"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <View>
+                      <Input
+                        label="Password"
+                        placeholder="Enter your password"
+                        value={value}
+                        onChangeText={onChange}
+                        onBlur={onBlur}
+                        secureTextEntry
+                        icon="lock-closed"
+                        returnKeyType="next"
+                        error={getFieldError(errors, 'password')}
+                        autoComplete="new-password"
+                      />
+
+                      {/* Password Strength Indicator */}
+                      {showPasswordStrength && value && (
+                        <View style={[commonStyles.mt2, commonStyles.mb2]}>
+                          <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb2]}>
+                            <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: colors.neutral[600] }]}>
+                              Password strength:
+                            </Text>
+                            <Text style={[commonStyles.textSm, commonStyles.fontMedium, commonStyles.ml1, { color: getStrengthColor() }]}>
+                              {passwordStrength.strength.charAt(0).toUpperCase() + passwordStrength.strength.slice(1)}
+                            </Text>
+                          </View>
+
+                          {/* Strength Progress Bar */}
+                          <View style={[commonStyles.flexRow, { gap: 2, marginBottom: 8 }]}>
+                            {[1, 2, 3, 4, 5].map((level) => (
+                              <View
+                                key={level}
+                                style={[
+                                  commonStyles.flex1,
+                                  { height: 4, borderRadius: 2 },
+                                  {
+                                    backgroundColor: passwordStrength.score >= level
+                                      ? getStrengthColor()
+                                      : colors.neutral[200]
+                                  }
+                                ]}
+                              />
+                            ))}
+                          </View>
+
+                          {/* Feedback */}
+                          {passwordStrength.feedback.length > 0 && (
+                            <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>
+                              Missing: {passwordStrength.feedback.join(', ')}
+                            </Text>
+                          )}
+                        </View>
+                      )}
+                    </View>
+                  )}
                 />
 
-                <Input
-                  label="Confirm Password"
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                  icon="lock-closed"
-                  returnKeyType="done"
+                <Controller
+                  control={control}
+                  name="confirmPassword"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <Input
+                      label="Confirm Password"
+                      placeholder="Confirm your password"
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      secureTextEntry
+                      icon="lock-closed"
+                      returnKeyType="done"
+                      error={getFieldError(errors, 'confirmPassword')}
+                      autoComplete="new-password"
+                    />
+                  )}
                 />
               </View>
 
-              <View style={[commonStyles.mt2, commonStyles.mb3]}>
-                <Text style={[commonStyles.textSm, commonStyles.fontMedium, commonStyles.textPrimary, commonStyles.mb2]}>
-                  I am a:
-                </Text>
-                <View style={[commonStyles.flexRow, { gap: 8 }]}>
-                  <TouchableOpacity
-                    style={[
-                      commonStyles.flex1,
-                      commonStyles.py3,
-                      commonStyles.px4,
-                      commonStyles.roundedLg,
-                      commonStyles.itemsCenter,
-                      {
-                        backgroundColor: userType === 'farmer' ? colors.primary[500] : colors.neutral[100],
-                        borderWidth: 1,
-                        borderColor: userType === 'farmer' ? colors.primary[500] : colors.neutral[200],
-                      },
-                    ]}
-                    onPress={() => setUserType('farmer')}
-                  >
-                    <Text style={[
-                      commonStyles.fontMedium,
-                      { color: userType === 'farmer' ? '#ffffff' : colors.neutral[700] },
-                    ]}>
-                      Farmer
+              <Controller
+                control={control}
+                name="userType"
+                render={({ field: { onChange, value } }) => (
+                  <View style={[commonStyles.mt2, commonStyles.mb3]}>
+                    <Text style={[commonStyles.textSm, commonStyles.fontMedium, commonStyles.textPrimary, commonStyles.mb2]}>
+                      I am a:
                     </Text>
-                  </TouchableOpacity>
+                    <View style={[commonStyles.flexRow, { gap: 8 }]}>
+                      <TouchableOpacity
+                        style={[
+                          commonStyles.flex1,
+                          commonStyles.py3,
+                          commonStyles.px4,
+                          commonStyles.roundedLg,
+                          commonStyles.itemsCenter,
+                          {
+                            backgroundColor: value === 'farmer' ? colors.primary[500] : colors.neutral[100],
+                            borderWidth: 1,
+                            borderColor: value === 'farmer' ? colors.primary[500] : colors.neutral[200],
+                          },
+                        ]}
+                        onPress={() => onChange('farmer')}
+                      >
+                        <Text style={[
+                          commonStyles.fontMedium,
+                          { color: value === 'farmer' ? '#ffffff' : colors.neutral[700] },
+                        ]}>
+                          Farmer
+                        </Text>
+                      </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={[
-                      commonStyles.flex1,
-                      commonStyles.py3,
-                      commonStyles.px4,
-                      commonStyles.roundedLg,
-                      commonStyles.itemsCenter,
-                      {
-                        backgroundColor: userType === 'expert' ? colors.primary[500] : colors.neutral[100],
-                        borderWidth: 1,
-                        borderColor: userType === 'expert' ? colors.primary[500] : colors.neutral[200],
-                      },
-                    ]}
-                    onPress={() => setUserType('expert')}
-                  >
-                    <Text style={[
-                      commonStyles.fontMedium,
-                      { color: userType === 'expert' ? '#ffffff' : colors.neutral[700] },
-                    ]}>
-                      Expert
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+                      <TouchableOpacity
+                        style={[
+                          commonStyles.flex1,
+                          commonStyles.py3,
+                          commonStyles.px4,
+                          commonStyles.roundedLg,
+                          commonStyles.itemsCenter,
+                          {
+                            backgroundColor: value === 'expert' ? colors.primary[500] : colors.neutral[100],
+                            borderWidth: 1,
+                            borderColor: value === 'expert' ? colors.primary[500] : colors.neutral[200],
+                          },
+                        ]}
+                        onPress={() => onChange('expert')}
+                      >
+                        <Text style={[
+                          commonStyles.fontMedium,
+                          { color: value === 'expert' ? '#ffffff' : colors.neutral[700] },
+                        ]}>
+                          Expert
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                    {getFieldError(errors, 'userType') && (
+                      <Text style={[commonStyles.textSm, { color: colors.danger[500] }, commonStyles.mt1]}>
+                        {getFieldError(errors, 'userType')}
+                      </Text>
+                    )}
+                  </View>
+                )}
+              />
+
+
 
               <Button
                 title="Create Account"
-                onPress={handleEmailAuth}
+                onPress={handleSubmit(onSubmit)}
                 variant="primary"
                 size="large"
                 loading={isLoading}
+                disabled={isLoading || hasAnyErrors(errors)}
                 icon={<Ionicons name="person-add" size={20} color="#ffffff" />}
               />
+
+              {/* Enhanced Error Display */}
+              {error && (
+                <View style={[commonStyles.mt3, commonStyles.p3, { backgroundColor: colors.danger[50], borderRadius: 8, borderWidth: 1, borderColor: colors.danger[200] }]}>
+                  <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb1]}>
+                    <Ionicons name="alert-circle" size={16} color={colors.danger[600]} />
+                    <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: colors.danger[600] }, commonStyles.ml1]}>
+                      Registration Error
+                    </Text>
+                  </View>
+                  <Text style={[commonStyles.textSm, { color: colors.danger[600] }]}>
+                    {error}
+                  </Text>
+                </View>
+              )}
+
+              {/* Form Validation Summary (only show if there are errors and form was submitted) */}
+              {hasAnyErrors(errors) && Object.keys(touchedFields).length > 0 && (
+                <View style={[commonStyles.mt3, commonStyles.p3, { backgroundColor: colors.warning[50], borderRadius: 8, borderWidth: 1, borderColor: colors.warning[200] }]}>
+                  <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb1]}>
+                    <Ionicons name="warning" size={16} color={colors.warning[600]} />
+                    <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: colors.warning[600] }, commonStyles.ml1]}>
+                      Please fix the following errors:
+                    </Text>
+                  </View>
+                  {Object.keys(errors).map((key) => {
+                    const errorMessage = getFieldError(errors, key);
+                    if (errorMessage) {
+                      return (
+                        <Text key={key} style={[commonStyles.textSm, { color: colors.warning[600] }, commonStyles.ml4]}>
+                          • {errorMessage}
+                        </Text>
+                      );
+                    }
+                    return null;
+                  })}
+                </View>
+              )}
             </Card>
 
             {/* Login Link */}

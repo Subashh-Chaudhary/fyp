@@ -74,29 +74,19 @@ export const useTokenValidation = () => {
   }, [token, logout]);
 };
 
-// Network status middleware
+// Network status middleware - simplified for React Native
 export const useNetworkMiddleware = () => {
   const { setNetworkStatus } = useAppStore();
 
   useEffect(() => {
-    const handleOnline = () => {
-      setNetworkStatus('online');
-    };
+    // For React Native, we'll use a simpler approach
+    // In a real app, you'd use @react-native-netinfo/netinfo
 
-    const handleOffline = () => {
-      setNetworkStatus('offline');
-    };
+    // Set initial status as online (default)
+    setNetworkStatus('online');
 
-    // Add event listeners for network status
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    // TODO: Implement proper network detection with @react-native-netinfo/netinfo
+    // This is a placeholder implementation
 
-    // Set initial status
-    setNetworkStatus(navigator.onLine ? 'online' : 'offline');
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
   }, [setNetworkStatus]);
 };

@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect } from 'react';
 import { validationUtils } from '../../lib/utils';
-import { LoginForm, RegisterForm, User } from '../interfaces';
+import { LoginForm, RegisterForm } from '../interfaces';
 import { httpClient } from '../services/http.client';
 import { useAuthStore } from '../store/auth.store';
 import { useLogin, useLogout, useRegister, useUserProfile } from './api.hooks';
@@ -16,12 +16,14 @@ export const useAuth = () => {
   const setUser = useAuthStore((state) => state.setUser);
   const logoutUser = useAuthStore((state) => state.logout);
 
+  // Get auth store actions
+  const setAuth = useAuthStore((state) => state.setAuth);
+
   // React Query hooks
   const loginMutation = useLogin({
     onSuccess: (response) => {
       if (response.success && response.data) {
-        const userData = response.data.user as User;
-        setUser(userData);
+        setAuth(response.data);
         router.replace('/(tabs)');
       }
     },
@@ -33,8 +35,7 @@ export const useAuth = () => {
   const registerMutation = useRegister({
     onSuccess: (response) => {
       if (response.success && response.data) {
-        const userData = response.data.user as User;
-        setUser(userData);
+        setAuth(response.data);
         router.replace('/(tabs)');
       }
     },
@@ -88,38 +89,14 @@ export const useAuth = () => {
 
   // Register function with validation
   const register = useCallback(async (userData: RegisterForm) => {
-    // Validate form data
-    if (!validationUtils.isRequired(userData.name)) {
-      throw new Error('Name is required');
-    }
-
-    if (!validationUtils.isValidEmail(userData.email)) {
-      throw new Error('Please enter a valid email address');
-    }
-
-    if (!validationUtils.isStrongPassword(userData.password)) {
-      throw new Error('Password must be at least 8 characters long');
-    }
-
-    if (!['farmer', 'expert'].includes(userData.userType)) {
-      throw new Error('Please select a valid user type');
-    }
-
-    if (userData.password !== userData.confirmPassword) {
-      throw new Error('Passwords do not match');
-    }
-
-    if (!userData.agreeToTerms) {
-      throw new Error('You must agree to the terms and conditions');
-    }
-
+    console.log("userData", userData);
+    console.log("registerMutation");
     return registerMutation.mutateAsync({
       name: userData.name,
       email: userData.email,
       password: userData.password,
-      confirmPassword: userData.confirmPassword,
-      userType: userData.userType,
-      agreeToTerms: userData.agreeToTerms,
+      confirm_password: userData.confirmPassword,
+      user_type: userData.userType,
     });
   }, [registerMutation]);
 

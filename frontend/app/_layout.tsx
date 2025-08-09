@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { AppProvider } from '../src/providers/app.provider';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -40,7 +41,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <AppProvider>
       <StatusBar style="auto" />
       <Stack>
         <Stack.Screen
@@ -62,6 +63,6 @@ export default function RootLayout() {
           }}
         />
       </Stack>
-    </>
+    </AppProvider>
   );
 }
