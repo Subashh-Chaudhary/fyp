@@ -21,7 +21,7 @@ export class ReorderExpertsTable1700000000000 implements MigrationInterface {
         "verification_token" character varying(255),
         "verification_token_expires_at" TIMESTAMP,
         "password_reset_token" character varying(255),
-        "reset_token_expires" TIMESTAMP,
+        "reset_token_expires_at" TIMESTAMP,
         "refresh_token" character varying(255),
         "refresh_token_expires_at" TIMESTAMP,
         "last_login_at" TIMESTAMP,
