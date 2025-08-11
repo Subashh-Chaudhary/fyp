@@ -1,8 +1,8 @@
 export interface ISocialUser {
   email?: string;
   name?: string;
-  social_provider: string;
-  social_id: string;
+  auth_provider: string;
+  provider_id: string;
 }
 
 // Google Profile interface

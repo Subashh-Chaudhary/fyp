@@ -30,7 +30,7 @@ export class BaseUserDto {
 
   @IsOptional()
   @IsUrl()
-  profile_image?: string;
+  avatar_url?: string;
 }
 
 // For registration with email/password
@@ -45,9 +45,13 @@ export class CreateUserDto extends BaseUserDto {
 export class CreateSocialUserDto extends BaseUserDto {
   @IsNotEmpty()
   @IsString()
-  social_provider: string;
+  auth_provider: string;
 
   @IsNotEmpty()
   @IsString()
-  social_id: string;
+  provider_id: string;
+
+  @IsOptional()
+  @IsString()
+  avatar_url?: string;
 }

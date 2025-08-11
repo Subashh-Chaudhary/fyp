@@ -52,6 +52,7 @@ export class AdminSeeder {
         is_verified: true, // Admin is pre-verified
         phone: adminPhone || '+1234567890',
         address: adminAddress || 'System Address',
+        is_admin: true,
       });
 
       console.log('✅ Admin user created successfully');

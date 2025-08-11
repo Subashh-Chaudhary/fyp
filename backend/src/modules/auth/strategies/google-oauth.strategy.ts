@@ -50,9 +50,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       const socialUserProfile = {
         email: emails[0]?.value || '',
         name: `${name.givenName} ${name.familyName}`.trim(),
-        social_provider: 'google',
-        social_id: profile.id,
-        profile_image: photos[0]?.value,
+        auth_provider: 'google',
+        provider_id: profile.id,
+        avatar_url: photos[0]?.value,
       };
 
       // Use social auth service to authenticate/create user
@@ -63,8 +63,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         id: user.id,
         email: user.email,
         name: user.name,
-        social_provider: 'google',
-        social_id: profile.id,
+        auth_provider: 'google',
+        provider_id: profile.id,
         accessToken,
         refreshToken,
       };

@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Post,
   Put,
   Query,
   Request,
@@ -14,12 +15,35 @@ import {
 } from '@nestjs/common';
 import { Request as ExpressRequest, Response } from 'express';
 import { ResponseHelper } from 'src/common/helpers/response.helper';
+import { CreateExpertDto } from './dtos/create-expert.dto';
 import { UpdateExpertDto } from './dtos/update-expert.dto';
 import { ExpertService } from './expert.service';
 
 @Controller('')
 export class ExpertController {
   constructor(private readonly expertService: ExpertService) {}
+
+  /**
+   * Create a new expert
+   * @param createExpertDto - Expert creation data
+   * @param res - Response object
+   * @returns Created expert
+   */
+  @Post('expert')
+  async createExpert(
+    @Body() createExpertDto: CreateExpertDto,
+    @Res() res: Response,
+  ) {
+    const expert = await this.expertService.createExpert(createExpertDto);
+    const response = ResponseHelper.success(
+      expert,
+      'Expert created successfully',
+      HttpStatus.CREATED,
+      '/expert',
+      'POST',
+    );
+    return res.status(response.statusCode).json(response);
+  }
 
   /**
    * Get all experts with pagination
@@ -42,6 +66,32 @@ export class ExpertController {
       result.pagination.total,
       'Experts retrieved successfully',
       '/experts',
+      'GET',
+    );
+    return res.status(response.statusCode).json(response);
+  }
+
+  /**
+   * Get all active experts with pagination
+   * @param page - Page number (default: 1)
+   * @param limit - Number of items per page (default: 10)
+   * @param res - Response object
+   * @returns Paginated list of active experts
+   */
+  @Get('experts/active')
+  async getActiveExperts(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10,
+    @Res() res: Response,
+  ) {
+    const result = await this.expertService.findActiveExperts(page, limit);
+    const response = ResponseHelper.paginated(
+      result.items,
+      result.pagination.page,
+      result.pagination.limit,
+      result.pagination.total,
+      'Active experts retrieved successfully',
+      '/experts/active',
       'GET',
     );
     return res.status(response.statusCode).json(response);
@@ -154,6 +204,70 @@ export class ExpertController {
       HttpStatus.OK,
       '/expert/profile',
       'PUT',
+    );
+    return res.status(response.statusCode).json(response);
+  }
+
+  /**
+   * Find expert by verification token
+   * @param token - Verification token
+   * @param res - Response object
+   * @returns Expert details
+   */
+  @Get('expert/verify/:token')
+  async getExpertByVerificationToken(
+    @Param('token') token: string,
+    @Res() res: Response,
+  ) {
+    const expert = await this.expertService.findByVerificationToken(token);
+    if (!expert) {
+      const response = ResponseHelper.error(
+        'Invalid verification token',
+        'Verification token not found',
+        HttpStatus.NOT_FOUND,
+        `/expert/verify/${token}`,
+        'GET',
+      );
+      return res.status(response.statusCode).json(response);
+    }
+    const response = ResponseHelper.success(
+      expert,
+      'Expert found by verification token',
+      HttpStatus.OK,
+      `/expert/verify/${token}`,
+      'GET',
+    );
+    return res.status(response.statusCode).json(response);
+  }
+
+  /**
+   * Find expert by password reset token
+   * @param token - Password reset token
+   * @param res - Response object
+   * @returns Expert details
+   */
+  @Get('expert/reset-password/:token')
+  async getExpertByPasswordResetToken(
+    @Param('token') token: string,
+    @Res() res: Response,
+  ) {
+    const expert = await this.expertService.findByPasswordResetToken(token);
+    if (!expert) {
+      const response = ResponseHelper.error(
+        'Invalid password reset token',
+        'Password reset token not found',
+        HttpStatus.NOT_FOUND,
+        `/expert/reset-password/${token}`,
+        'GET',
+      );
+      return res.status(response.statusCode).json(response);
+    }
+    const response = ResponseHelper.success(
+      expert,
+      'Expert found by password reset token',
+      HttpStatus.OK,
+      `/expert/reset-password/${token}`,
+      'GET',
     );
     return res.status(response.statusCode).json(response);
   }

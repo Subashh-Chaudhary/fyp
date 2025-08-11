@@ -27,13 +27,19 @@ export class Users {
   address: string;
 
   @Column({ length: 512, nullable: true })
-  profile_image: string;
+  avatar_url: string;
 
   @Column({ default: false })
   is_verified: boolean;
 
+  @Column({ default: true })
+  is_active: boolean;
+
   @Column({ length: 255, nullable: true })
   verification_token: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  verification_expires_at: Date;
 
   @Column({ length: 255, nullable: true })
   password_reset_token: string;
@@ -41,11 +47,23 @@ export class Users {
   @Column({ type: 'timestamp', nullable: true })
   reset_token_expires: Date;
 
+  @Column({ length: 255, nullable: true })
+  refresh_token: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  refresh_token_expires_at: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  last_login_at: Date;
+
   @Column({ length: 50, nullable: true })
-  social_provider: string;
+  auth_provider: string;
 
   @Column({ length: 255, nullable: true })
-  social_id: string;
+  provider_id: string;
+
+  @Column({ default: false })
+  is_admin: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

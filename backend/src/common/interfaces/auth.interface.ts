@@ -14,8 +14,8 @@ export interface AuthenticatedUser {
   id: string | number;
   email: string;
   name: string;
-  social_provider: string;
-  social_id: string;
+  auth_provider: string;
+  provider_id: string;
   accessToken: string;
   refreshToken: string;
 }
@@ -30,6 +30,6 @@ export interface IUserData {
   id: string | number;
   email: string;
   name: string;
-  social_provider?: string;
-  social_id?: string;
+  auth_provider?: string;
+  provider_id?: string;
 }

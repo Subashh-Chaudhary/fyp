@@ -15,6 +15,7 @@ import { Repository } from 'typeorm';
 import { Experts } from '../expert/entities/expert.entity';
 import { ExpertService } from '../expert/expert.service';
 import { Users } from '../users/entities/users.entity';
+import { UsersRepository } from '../users/repositories/users.repository';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dtos/login.dto';
 import { RegisterDto } from './dtos/register.dto';
@@ -33,6 +34,7 @@ export class AuthService {
     private usersRepository: Repository<Users>,
     @InjectRepository(Experts)
     private expertsRepository: Repository<Experts>,
+    private readonly usersRepo: UsersRepository,
   ) {}
 
   /**
@@ -98,9 +100,9 @@ export class AuthService {
   }
 
   /**
-   * Create a new user in users table
-   * @param userData - User data
-   * @returns Created user
+   * Create a new user (farmer)
+   * @param userData - User registration data
+   * @returns Created user object
    */
   private async createUser(userData: RegisterDto): Promise<Users> {
     // Hash the password
@@ -113,7 +115,7 @@ export class AuthService {
       password: hashedPassword,
       phone: userData.phone,
       address: userData.address,
-      profile_image: userData.profile_image,
+      avatar_url: userData.avatar_url,
       is_verified: false,
     });
 
@@ -121,9 +123,9 @@ export class AuthService {
   }
 
   /**
-   * Create a new expert in experts table
-   * @param userData - User data
-   * @returns Created expert
+   * Create a new expert
+   * @param userData - Expert registration data
+   * @returns Created expert object
    */
   private async createExpert(userData: RegisterDto): Promise<Experts> {
     // Hash the password
@@ -136,8 +138,9 @@ export class AuthService {
       password: hashedPassword,
       phone: userData.phone,
       address: userData.address,
-      profile_image: userData.profile_image,
+      avatar_url: userData.avatar_url,
       is_verified: false,
+      is_active: true,
     });
 
     return this.expertsRepository.save(expert);
@@ -164,6 +167,11 @@ export class AuthService {
     );
     if (!isPasswordValid) {
       throw new BadRequestException('Invalid credentials');
+    }
+
+    // Update last login time for experts
+    if (user.id && (await this.expertService.findByEmail(loginDto.email))) {
+      await this.expertService.updateLastLogin(String(user.id));
     }
 
     // Generate JWT token
@@ -228,8 +236,6 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       name: user.name,
-      social_provider: user.social_provider,
-      social_id: user.social_id,
     };
 
     return this.jwtService.sign(payload);
@@ -249,10 +255,10 @@ export class AuthService {
   }
 
   /**
-   * Verify password against hash
+   * Verify password against hashed password
    * @param plainPassword - Plain text password
    * @param hashedPassword - Hashed password
-   * @returns True if password matches, false otherwise
+   * @returns Boolean indicating if password is valid
    */
   private async verifyPassword(
     plainPassword: string,

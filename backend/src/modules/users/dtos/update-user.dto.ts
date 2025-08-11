@@ -37,6 +37,12 @@ export class UpdateUserDto {
   address?: string;
 
   @IsOptional()
-  @IsUrl({}, { message: 'Please provide a valid URL for profile image' })
-  profile_image?: string;
+  @IsUrl({}, { message: 'Please provide a valid URL for avatar' })
+  avatar_url?: string;
+
+  @IsOptional()
+  is_verified?: boolean;
+
+  @IsOptional()
+  is_active?: boolean;
 }

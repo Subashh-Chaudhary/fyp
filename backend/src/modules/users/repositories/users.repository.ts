@@ -30,7 +30,7 @@ export class UsersRepository {
     socialId: string,
   ): Promise<Users | undefined> {
     const user = await this.userRepository.findOne({
-      where: { social_provider: provider, social_id: socialId },
+      where: { auth_provider: provider, provider_id: socialId },
     });
     return user || undefined;
   }

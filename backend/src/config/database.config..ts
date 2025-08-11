@@ -5,16 +5,17 @@ export default registerAs(
   'database',
   (): TypeOrmModuleOptions => ({
     type: 'postgres',
-    host: process.env.DB_HOST, // TODO: change to env variable
+    host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || '5432', 10),
-    username: process.env.DB_USERNAME, // TODO: change to env variable
-    password: process.env.DB_PASSWORD, // TODO: change to env variable
-    database: process.env.DB_NAME, // TODO: change to env variable
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: false, // Disable auto-synchronization to prevent schema conflicts
+    synchronize: true,
     logging: process.env.NODE_ENV === 'development',
-    migrations: [__dirname + '/migrations/*{.ts,.js}'],
+    migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
     migrationsRun: process.env.DB_RUN_MIGRATIONS === 'true',
+    migrationsTableName: 'migrations',
     extra:
       process.env.DB_SSL === 'true'
         ? {

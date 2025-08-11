@@ -1,12 +1,12 @@
 import {
-  Body,
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Post,
-  Req,
-  UseGuards,
+    Body,
+    Controller,
+    Get,
+    HttpException,
+    HttpStatus,
+    Post,
+    Req,
+    UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
@@ -123,8 +123,8 @@ export class AuthController {
         id: user.id,
         email: user.email,
         name: user.name,
-        social_provider: 'google',
-        social_id: user.social_id,
+        auth_provider: 'google',
+        provider_id: user.provider_id,
       });
 
       return ResponseHelper.success(
@@ -133,8 +133,8 @@ export class AuthController {
             id: user.id,
             email: user.email,
             name: user.name,
-            social_provider: user.social_provider,
-            social_id: user.social_id,
+            auth_provider: user.auth_provider,
+            provider_id: user.provider_id,
           },
           access_token: token,
         },
