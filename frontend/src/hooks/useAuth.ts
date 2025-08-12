@@ -95,8 +95,8 @@ export const useAuth = () => {
       name: userData.name,
       email: userData.email,
       password: userData.password,
-      confirm_password: userData.confirmPassword,
-      user_type: userData.userType,
+      confirm_password: userData.confirm_password,
+      user_type: userData.user_type,
     });
   }, [registerMutation]);
 

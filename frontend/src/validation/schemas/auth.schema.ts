@@ -50,8 +50,8 @@ export const registerSchema = yup.object().shape({
   name: nameValidation,
   email: emailValidation,
   password: passwordValidation,
-  confirmPassword: confirmPasswordValidation(),
-  userType: userTypeValidation
+  confirm_password: confirmPasswordValidation(),
+  user_type: userTypeValidation
 });
 
 // Login schema
@@ -72,7 +72,7 @@ export const forgotPasswordSchema = yup.object().shape({
 export const resetPasswordSchema = yup.object().shape({
   token: yup.string().required('Reset token is required'),
   password: passwordValidation,
-  confirmPassword: confirmPasswordValidation(),
+  confirm_password: confirmPasswordValidation(),
 });
 
 // Change password schema

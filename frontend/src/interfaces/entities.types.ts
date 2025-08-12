@@ -4,8 +4,14 @@ export interface User {
   name: string;
   email: string;
   userType: 'farmer' | 'expert';
-  createdAt: Date;
-  updatedAt: Date;
+  phone?: string;
+  address?: string;
+  avatar_url?: string;
+  is_verified: boolean;
+  is_active: boolean;
+  is_admin?: boolean;
+  created_at: Date;
+  updated_at: Date;
 }
 
 // Crop and disease types

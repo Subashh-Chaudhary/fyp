@@ -54,12 +54,25 @@ export interface ForgotPasswordRequest {
 export interface ResetPasswordRequest {
   token: string;
   password: string;
-  confirmPassword: string;
+  confirm_password: string;
 }
 
 export interface AuthResponse {
   user: User;
   access_token: string;
+}
+
+// Backend API Response Structure
+export interface BackendApiResponse<T = any> {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: T;
+  meta: {
+    timestamp: string;
+    path: string;
+    method: string;
+  };
 }
 
 // User Types

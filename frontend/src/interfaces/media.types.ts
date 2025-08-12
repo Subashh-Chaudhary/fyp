@@ -17,6 +17,6 @@ export interface RegisterForm {
   name: string;
   email: string;
   password: string;
-  confirmPassword: string;
-  userType: 'farmer' | 'expert';
+  confirm_password: string;
+  user_type: 'farmer' | 'expert';
 }

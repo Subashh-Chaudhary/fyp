@@ -52,12 +52,12 @@ export default function RegisterScreen() {
       name: '',
       email: '',
       password: '',
-      confirmPassword: '',
-      userType: 'farmer',
+      confirm_password: '',
+      user_type: 'farmer',
     },
   });
 
-  const userType = watch('userType') as 'farmer' | 'expert';
+  const userType = watch('user_type') as 'farmer' | 'expert';
   const currentPassword = watch('password');
 
   // Monitor password changes for strength indicator
@@ -84,8 +84,8 @@ export default function RegisterScreen() {
         name: data.name.trim(),
         email: data.email.toLowerCase().trim(),
         password: data.password,
-        confirmPassword: data.confirmPassword,
-        userType: data.userType,
+        confirm_password: data.confirm_password,
+        user_type: data.user_type,
       });
     } catch (err: any) {
       Alert.alert('Registration Failed', err.message || 'An error occurred during registration');
@@ -240,7 +240,7 @@ export default function RegisterScreen() {
 
                 <Controller
                   control={control}
-                  name="confirmPassword"
+                  name="confirm_password"
                   render={({ field: { onChange, onBlur, value } }) => (
                     <Input
                       label="Confirm Password"
@@ -251,7 +251,7 @@ export default function RegisterScreen() {
                       secureTextEntry
                       icon="lock-closed"
                       returnKeyType="done"
-                      error={getFieldError(errors, 'confirmPassword')}
+                      error={getFieldError(errors, 'confirm_password')}
                       autoComplete="new-password"
                     />
                   )}
@@ -260,7 +260,7 @@ export default function RegisterScreen() {
 
               <Controller
                 control={control}
-                name="userType"
+                name="user_type"
                 render={({ field: { onChange, value } }) => (
                   <View style={[commonStyles.mt2, commonStyles.mb3]}>
                     <Text style={[commonStyles.textSm, commonStyles.fontMedium, commonStyles.textPrimary, commonStyles.mb2]}>
@@ -313,9 +313,9 @@ export default function RegisterScreen() {
                         </Text>
                       </TouchableOpacity>
                     </View>
-                    {getFieldError(errors, 'userType') && (
+                    {getFieldError(errors, 'user_type') && (
                       <Text style={[commonStyles.textSm, { color: colors.danger[500] }, commonStyles.mt1]}>
-                        {getFieldError(errors, 'userType')}
+                        {getFieldError(errors, 'user_type')}
                       </Text>
                     )}
                   </View>
