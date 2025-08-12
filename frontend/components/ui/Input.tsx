@@ -1,15 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Text, TextInput, TextInputProps, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
+import { InputProps } from '../../src/interfaces';
 import { colors, commonStyles } from '../../styles';
-
-interface InputProps extends Omit<TextInputProps, 'style'> {
-  label?: string;
-  error?: string;
-  icon?: keyof typeof Ionicons.glyphMap;
-  variant?: 'default' | 'outlined';
-  style?: any;
-}
 
 /**
  * Reusable Input component with validation and styling options

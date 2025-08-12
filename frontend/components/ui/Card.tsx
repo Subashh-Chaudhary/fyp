@@ -1,14 +1,7 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View } from 'react-native';
+import { CardProps } from '../../src/interfaces';
 import { colors, commonStyles } from '../../styles';
-
-interface CardProps {
-  children: React.ReactNode;
-  variant?: 'default' | 'outlined' | 'elevated';
-  padding?: 'small' | 'medium' | 'large' | 'none';
-  margin?: 'small' | 'medium' | 'large' | 'none';
-  style?: ViewStyle;
-}
 
 /**
  * Reusable Card component with different variants and padding options

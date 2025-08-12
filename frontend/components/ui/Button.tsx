@@ -1,17 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { ButtonProps } from '../../src/interfaces';
 import { colors, commonStyles } from '../../styles';
-
-interface ButtonProps {
-  title: string;
-  onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger';
-  size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
-  loading?: boolean;
-  icon?: React.ReactNode;
-  style?: any;
-}
 
 /**
  * Reusable Button component with multiple variants and sizes

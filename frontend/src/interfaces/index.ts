@@ -5,3 +5,4 @@ export * from './auth.types';
 export * from './entities.types';
 export * from './media.types';
 export * from './navigation.types';
+export * from './ui.types';

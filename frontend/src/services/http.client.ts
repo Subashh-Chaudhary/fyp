@@ -1,26 +1,18 @@
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse
-} from 'axios';
-import { API_CONFIG, ERROR_MESSAGES, getApiConfig } from '../config/api.config';
-import { ApiError, ApiResponse, RequestOptions } from '../interfaces/api.types';
-import { AuthSecureStorage } from '../utils/secureStorage';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { getApiConfig } from '../config/api.config';
 
-// HTTP Client Class
+// Simple HTTP Client Class
 export class HttpClient {
   private instance: AxiosInstance;
   private token: string | null = null;
-  private refreshToken: string | null = null;
-  private isRefreshing = false;
-  private failedQueue: {
-    resolve: (value: any) => void;
-    reject: (error: any) => void;
-  }[] = [];
 
   constructor() {
     const config = getApiConfig();
+
+    // Debug logging for development
+    if (__DEV__) {
+      console.log('HTTP Client initialized with config:', config);
+    }
 
     this.instance = axios.create({
       baseURL: config.BASE_URL,
@@ -29,65 +21,71 @@ export class HttpClient {
     });
 
     this.setupInterceptors();
-    this.loadTokens();
   }
 
-  // Setup request and response interceptors
+  // Setup request interceptor to add auth token
   private setupInterceptors(): void {
-    // Request interceptor
     this.instance.interceptors.request.use(
       (config) => {
-        // Add auth token if available
+        if (__DEV__) {
+          console.log('Making request to:', (config.baseURL || '') + (config.url || ''));
+        }
+
         if (this.token) {
           config.headers.Authorization = `Bearer ${this.token}`;
         }
-
-        // Add request timestamp
-        config.headers['X-Request-Timestamp'] = new Date().toISOString();
-
         return config;
       },
       (error) => {
+        if (__DEV__) {
+          console.error('Request interceptor error:', error);
+        }
         return Promise.reject(error);
       }
     );
 
-    // Response interceptor
+    // Add response interceptor for debugging
     this.instance.interceptors.response.use(
-      (response: AxiosResponse) => {
+      (response) => {
+        if (__DEV__) {
+          console.log('Response received:', response.status, response.config.url);
+          console.log('Response data structure:', {
+            hasSuccess: 'success' in response.data,
+            hasData: 'data' in response.data,
+            hasStatusCode: 'statusCode' in response.data,
+            hasMessage: 'message' in response.data,
+            successValue: response.data.success,
+            statusCode: response.data.statusCode,
+            message: response.data.message,
+            dataKeys: response.data.data ? Object.keys(response.data.data) : 'No data field'
+          });
+        }
         return response;
       },
-      async (error: AxiosError) => {
-        const originalRequest = error.config as any;
+      (error) => {
+        if (__DEV__) {
+          console.error('Response error:', {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            url: error.config?.url,
+            message: error.message,
+            code: error.code,
+            isNetworkError: !error.response,
+            responseData: error.response?.data
+          });
+        }
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          if (this.isRefreshing) {
-            // Wait for the refresh to complete
-            return new Promise((resolve, reject) => {
-              this.failedQueue.push({ resolve, reject });
-            }).then(() => {
-              return this.instance(originalRequest);
-            }).catch((err) => {
-              return Promise.reject(err);
-            });
+        // If we have a response with error data, enhance the error message
+        if (error.response?.data) {
+          const apiError = error.response.data;
+          // Create a more user-friendly error message
+          if (apiError.message) {
+            error.message = apiError.message;
+          } else if (apiError.error) {
+            error.message = apiError.error;
           }
-
-          originalRequest._retry = true;
-          this.isRefreshing = true;
-
-          try {
-            const newTokens = await this.refreshAuthToken();
-            if (newTokens) {
-              this.processQueue(null, newTokens);
-              return this.instance(originalRequest);
-            }
-          } catch (refreshError) {
-            this.processQueue(refreshError, null);
-            await this.logout();
-            return Promise.reject(refreshError);
-          } finally {
-            this.isRefreshing = false;
-          }
+          // Store the full API error data for debugging
+          error.apiError = apiError;
         }
 
         return Promise.reject(error);
@@ -95,232 +93,46 @@ export class HttpClient {
     );
   }
 
-  // Process failed requests queue
-  private processQueue(error: any, token: any): void {
-    this.failedQueue.forEach(({ resolve, reject }) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(token);
-      }
-    });
-
-    this.failedQueue = [];
-  }
-
-    // Load tokens from storage
-  private async loadTokens(): Promise<void> {
-    try {
-      const { token, refreshToken } = await AuthSecureStorage.getTokens();
-      this.token = token;
-      this.refreshToken = refreshToken;
-    } catch (error) {
-      console.error('Failed to load tokens:', error);
-    }
-  }
-
-  // Save tokens to storage
-  private async saveTokens(token: string, refreshToken: string): Promise<void> {
-    try {
-      await AuthSecureStorage.storeTokens(token, refreshToken);
-      this.token = token;
-      this.refreshToken = refreshToken;
-    } catch (error) {
-      console.error('Failed to save tokens:', error);
-    }
-  }
-
-  // Refresh authentication token
-  private async refreshAuthToken(): Promise<{ token: string; refreshToken: string } | null> {
-    if (!this.refreshToken) {
-      return null;
-    }
-
-    try {
-      const response = await axios.post(`${getApiConfig().BASE_URL}/auth/refresh`, {
-        refreshToken: this.refreshToken,
-      });
-
-      const { token, refreshToken } = response.data.data;
-      await this.saveTokens(token, refreshToken);
-
-      return { token, refreshToken };
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      return null;
-    }
-  }
-
-    // Logout and clear tokens
-  private async logout(): Promise<void> {
-    try {
-      await AuthSecureStorage.clearAuthData();
-
-      this.token = null;
-      this.refreshToken = null;
-    } catch (error) {
-      console.error('Failed to clear tokens:', error);
-    }
-  }
-
-  // Set authentication tokens
-  public setAuthTokens(token: string, refreshToken: string): void {
+  // Set authentication token
+  public setAuthToken(token: string): void {
     this.token = token;
-    this.refreshToken = refreshToken;
-    this.saveTokens(token, refreshToken);
   }
 
-  // Clear authentication tokens
-  public clearAuthTokens(): void {
+  // Clear authentication token
+  public clearAuthToken(): void {
     this.token = null;
-    this.refreshToken = null;
-    this.logout();
   }
 
-  // Generic request method with retry logic
-  public async request<T>(
-    config: AxiosRequestConfig,
-    options: RequestOptions = {}
-  ): Promise<ApiResponse<T>> {
-    const {
-      timeout = API_CONFIG.TIMEOUT,
-      retryAttempts = API_CONFIG.RETRY_ATTEMPTS,
-      retryDelay = API_CONFIG.RETRY_DELAY,
-      headers = {},
-      signal,
-    } = options;
-
-    let lastError: AxiosError;
-
-    for (let attempt = 0; attempt <= retryAttempts; attempt++) {
-      try {
-        const response = await this.instance.request({
-          ...config,
-          timeout,
-          headers: { ...config.headers, ...headers },
-          signal,
-        });
-
-        return this.transformResponse<T>(response);
-      } catch (error) {
-        lastError = error as AxiosError;
-
-        // Don't retry on certain errors
-        if (this.shouldNotRetry(error as AxiosError)) {
-          break;
-        }
-
-        // Wait before retrying (except on last attempt)
-        if (attempt < retryAttempts) {
-          await this.delay(retryDelay * Math.pow(2, attempt)); // Exponential backoff
-        }
-      }
-    }
-
-    return this.transformError<T>(lastError!);
+  // HTTP method shortcuts - return raw axios responses
+  public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.instance.get<T>(url, config);
+    return response.data;
   }
 
-  // Transform successful response
-  private transformResponse<T>(response: AxiosResponse): ApiResponse<T> {
-    return {
-      success: true,
-      data: response.data.data || response.data,
-      message: response.data.message,
-      statusCode: response.status,
-      timestamp: new Date().toISOString(),
-    };
+  public async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.instance.post<T>(url, data, config);
+    return response.data;
   }
 
-  // Transform error response
-  private transformError<T>(error: AxiosError): ApiResponse<T> {
-    const apiError: ApiError = {
-      code: this.getErrorCode(error),
-      message: this.getErrorMessage(error),
-      details: error.response?.data,
-      timestamp: new Date().toISOString(),
-    };
-
-    return {
-      success: false,
-      error: apiError,
-      statusCode: error.response?.status,
-      timestamp: new Date().toISOString(),
-    };
+  public async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.instance.put<T>(url, data, config);
+    return response.data;
   }
 
-  // Get error code from response
-  private getErrorCode(error: AxiosError): string {
-    const responseData = error.response?.data as any;
-    if (responseData?.code) {
-      return responseData.code;
-    }
-
-    if (error.code) {
-      return error.code;
-    }
-
-    return 'UNKNOWN_ERROR';
+  public async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.instance.patch<T>(url, data, config);
+    return response.data;
   }
 
-  // Get error message from response
-  private getErrorMessage(error: AxiosError): string {
-    const responseData = error.response?.data as any;
-    if (responseData?.message) {
-      return responseData.message;
-    }
-
-    if (responseData?.error) {
-      return responseData.error;
-    }
-
-    if (error.message) {
-      return error.message;
-    }
-
-    return ERROR_MESSAGES.UNKNOWN_ERROR;
+  public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.instance.delete<T>(url, config);
+    return response.data;
   }
 
-  // Check if error should not be retried
-  private shouldNotRetry(error: AxiosError): boolean {
-    const status = error.response?.status;
-
-    // Don't retry on client errors (4xx) except 408, 429
-    if (status && status >= 400 && status < 500 && ![408, 429].includes(status)) {
-      return true;
-    }
-
-    // Don't retry on network errors
-    if (!error.response && !error.request) {
-      return true;
-    }
-
-    return false;
-  }
-
-  // Utility delay function
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  // HTTP method shortcuts
-  public async get<T>(url: string, config?: AxiosRequestConfig, options?: RequestOptions): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'GET', url }, options);
-  }
-
-  public async post<T>(url: string, data?: any, config?: AxiosRequestConfig, options?: RequestOptions): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'POST', url, data }, options);
-  }
-
-  public async put<T>(url: string, data?: any, config?: AxiosRequestConfig, options?: RequestOptions): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'PUT', url, data }, options);
-  }
-
-  public async patch<T>(url: string, data?: any, config?: AxiosRequestConfig, options?: RequestOptions): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'PATCH', url, data }, options);
-  }
-
-  public async delete<T>(url: string, config?: AxiosRequestConfig, options?: RequestOptions): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'DELETE', url }, options);
+  // Generic request method for custom requests
+  public async request<T>(config: AxiosRequestConfig): Promise<T> {
+    const response = await this.instance.request<T>(config);
+    return response.data;
   }
 }
 

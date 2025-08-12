@@ -3,12 +3,14 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { ErrorAlert } from '../../components/ui/ErrorAlert';
 import { Input } from '../../components/ui/Input';
 import { useAuth } from '../../src/hooks';
+import { ErrorAlertData, PasswordStrength } from '../../src/interfaces';
 import { checkPasswordStrength, getFieldError, hasAnyErrors, RegisterFormData, registerSchema } from '../../src/validation';
 import { colors, commonStyles } from '../../styles';
 
@@ -18,19 +20,14 @@ import { colors, commonStyles } from '../../styles';
  */
 export default function RegisterScreen() {
   const { register, isLoading, error } = useAuth();
-  const [passwordStrength, setPasswordStrength] = useState<{
-    strength: 'weak' | 'fair' | 'good' | 'strong';
-    score: number;
-    checks: {
-      length: boolean;
-      lowercase: boolean;
-      uppercase: boolean;
-      number: boolean;
-      special: boolean;
-    };
-    feedback: string[];
-    isValid: boolean;
-  }>({
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorAlertData, setErrorAlertData] = useState<ErrorAlertData>({
+    title: '',
+    message: '',
+    showRetry: false,
+    type: 'error',
+  });
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
     strength: 'weak',
     score: 0,
     checks: { length: false, lowercase: false, uppercase: false, number: false, special: false },
@@ -71,14 +68,60 @@ export default function RegisterScreen() {
     }
   }, [currentPassword]);
 
+  // Helper function to get user-friendly error message
+  const getUserFriendlyErrorMessage = (error: string, userType: string, email: string) => {
+    if (error.includes('already exists')) {
+      const userTypeText = userType === 'farmer' ? 'farmer' : 'expert';
+      return `A ${userTypeText} with the email "${email}" already exists. Please try with a different email address.\n\nIf you already have an account, you can sign in instead.`;
+    }
+    if (error.includes('network') || error.includes('connection')) {
+      return 'Network connection error. Please check your internet connection and try again.\n\nMake sure you have a stable internet connection and try again.';
+    }
+    if (error.includes('validation') || error.includes('invalid')) {
+      return 'Please check your input and try again.\n\nMake sure all fields are filled correctly and your password meets the requirements.';
+    }
+    if (error.includes('timeout')) {
+      return 'Request timed out. The server is taking too long to respond.\n\nPlease try again in a few moments.';
+    }
+    if (error.includes('server') || error.includes('500')) {
+      return 'Server error occurred. Our team has been notified.\n\nPlease try again later or contact support if the problem persists.';
+    }
+    return error;
+  };
+
+  // Helper function to determine alert type based on error
+  const getAlertType = (error: string): 'error' | 'warning' | 'info' => {
+    if (error.includes('already exists')) {
+      return 'warning'; // User can try with different email
+    }
+    if (error.includes('network') || error.includes('connection')) {
+      return 'error'; // Network issues are errors
+    }
+    if (error.includes('validation') || error.includes('invalid')) {
+      return 'warning'; // Validation issues are warnings
+    }
+    if (error.includes('timeout')) {
+      return 'warning'; // Timeouts are warnings (can retry)
+    }
+    if (error.includes('server') || error.includes('500')) {
+      return 'error'; // Server errors are errors
+    }
+    return 'error'; // Default to error
+  };
+
   const onSubmit = async (data: RegisterFormData) => {
     try {
       // Additional client-side validation before submission
       if (hasAnyErrors(errors)) {
-        Alert.alert('Validation Error', 'Please fix all errors before submitting.');
+        setErrorAlertData({
+          title: 'Validation Error',
+          message: 'Please fix all errors before submitting.',
+          showRetry: false,
+          type: 'warning',
+        });
+        setShowErrorAlert(true);
         return;
       }
-      console.log('Registration data:', data);
 
       await register({
         name: data.name.trim(),
@@ -88,13 +131,53 @@ export default function RegisterScreen() {
         user_type: data.user_type,
       });
     } catch (err: any) {
-      Alert.alert('Registration Failed', err.message || 'An error occurred during registration');
+      // Handle specific error cases with user-friendly messages
+      let errorMessage = 'An error occurred during registration. Please try again.';
+
+      if (err.message) {
+        errorMessage = getUserFriendlyErrorMessage(err.message, data.user_type, data.email);
+      }
+
+      setErrorAlertData({
+        title: 'Registration Failed',
+        message: errorMessage,
+        showRetry: true,
+        type: getAlertType(err.message || errorMessage),
+        quickAction: err.message?.includes('already exists') ? {
+          label: 'Sign In Instead',
+          onPress: () => {
+            setShowErrorAlert(false);
+            router.push('/(auth)/login');
+          },
+          variant: 'primary' as const,
+        } : err.message?.includes('network') || err.message?.includes('connection') ? {
+          label: 'Check Connection',
+          onPress: () => {
+            setShowErrorAlert(false);
+            // Could add network status check here
+          },
+          variant: 'secondary' as const,
+        } : undefined,
+      });
+      setShowErrorAlert(true);
     }
   };
 
   const handleSocialAuth = (provider: 'google' | 'facebook') => {
     // TODO: Implement social authentication
-    Alert.alert('Coming Soon', `${provider.charAt(0).toUpperCase() + provider.slice(1)} authentication will be available soon!`);
+    setErrorAlertData({
+      title: 'Coming Soon',
+      message: `${provider.charAt(0).toUpperCase() + provider.slice(1)} authentication will be available soon!`,
+      showRetry: false,
+      type: 'info',
+    });
+    setShowErrorAlert(true);
+  };
+
+  // Handle retry for registration
+  const handleRetry = () => {
+    setShowErrorAlert(false);
+    // The form will be resubmitted when the user clicks the button again
   };
 
   // Helper function to get strength color
@@ -344,8 +427,13 @@ export default function RegisterScreen() {
                     </Text>
                   </View>
                   <Text style={[commonStyles.textSm, { color: colors.danger[600] }]}>
-                    {error}
+                    {getUserFriendlyErrorMessage(error, userType, watch('email'))}
                   </Text>
+                  {error.includes('already exists') && (
+                    <Text style={[commonStyles.textXs, { color: colors.danger[500] }, commonStyles.mt1]}>
+                      Tip: You can also try signing in if you already have an account.
+                    </Text>
+                  )}
                 </View>
               )}
 
@@ -382,6 +470,18 @@ export default function RegisterScreen() {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Custom Error Alert */}
+      <ErrorAlert
+        visible={showErrorAlert}
+        title={errorAlertData.title}
+        message={errorAlertData.message}
+        showRetry={errorAlertData.showRetry}
+        onClose={() => setShowErrorAlert(false)}
+        onRetry={handleRetry}
+        type={errorAlertData.type}
+        quickAction={errorAlertData.quickAction}
+      />
     </SafeAreaView>
   );
 }

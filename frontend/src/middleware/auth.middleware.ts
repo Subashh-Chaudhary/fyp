@@ -1,13 +1,12 @@
 import { useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import { useAppStore } from '../store/app.store';
 import { useAuthStore } from '../store/auth.store';
 
 // Auth middleware hook
 export const useAuthMiddleware = () => {
   const segments = useSegments();
   const router = useRouter();
-  const { isAuthenticated, token, user } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
     const inAuthGroup = segments[0] === '(auth)';
@@ -23,13 +22,7 @@ export const useAuthMiddleware = () => {
       router.replace('/(tabs)');
       return;
     }
-
-    // If user is authenticated but no user data, try to fetch profile
-    if (isAuthenticated && !user && token) {
-      // This will be handled by the auth store or a separate effect
-      console.log('User authenticated but no profile data, fetching...');
-    }
-  }, [isAuthenticated, segments, router, token, user]);
+  }, [isAuthenticated, segments, router, user]);
 };
 
 // Route protection hook
@@ -41,52 +34,4 @@ export const useRouteProtection = (requiredAuth: boolean = true) => {
   }
 
   return { isAuthenticated, isLoading };
-};
-
-// Token validation middleware
-export const useTokenValidation = () => {
-  const { token, logout } = useAuthStore();
-
-  useEffect(() => {
-    const validateToken = async () => {
-      if (!token) {
-        logout();
-        return;
-      }
-
-      try {
-        // You can add token validation logic here
-        // For example, decode JWT and check expiration
-        const tokenData = JSON.parse(atob(token.split('.')[1]));
-        const currentTime = Date.now() / 1000;
-
-        if (tokenData.exp < currentTime) {
-          // Token expired
-          logout();
-        }
-      } catch (error) {
-        console.error('Token validation failed:', error);
-        logout();
-      }
-    };
-
-    validateToken();
-  }, [token, logout]);
-};
-
-// Network status middleware - simplified for React Native
-export const useNetworkMiddleware = () => {
-  const { setNetworkStatus } = useAppStore();
-
-  useEffect(() => {
-    // For React Native, we'll use a simpler approach
-    // In a real app, you'd use @react-native-netinfo/netinfo
-
-    // Set initial status as online (default)
-    setNetworkStatus('online');
-
-    // TODO: Implement proper network detection with @react-native-netinfo/netinfo
-    // This is a placeholder implementation
-
-  }, [setNetworkStatus]);
 };

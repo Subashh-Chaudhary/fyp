@@ -3,15 +3,26 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  userType: 'farmer' | 'expert';
-  phone?: string;
-  address?: string;
-  avatar_url?: string;
+  userType: 'farmer' | 'expert'; // This maps to user_type from backend
+  phone?: string | null;
+  address?: string | null;
+  avatar_url?: string | null;
   is_verified: boolean;
   is_active: boolean;
-  is_admin?: boolean;
-  created_at: Date;
-  updated_at: Date;
+  is_admin: boolean;
+  created_at: string; // Backend returns ISO string
+  updated_at: string; // Backend returns ISO string
+
+  // Additional fields from backend response
+  verification_token?: string | null;
+  verification_expires_at?: string | null;
+  password_reset_token?: string | null;
+  reset_token_expires_at?: string | null;
+  refresh_token?: string | null;
+  refresh_token_expires_at?: string | null;
+  last_login_at?: string | null;
+  auth_provider?: string | null;
+  provider_id?: string | null;
 }
 
 // Crop and disease types
