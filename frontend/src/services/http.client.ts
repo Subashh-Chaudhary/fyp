@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+
 import { getApiConfig } from '../config/api.config';
 
 // Simple HTTP Client Class
@@ -77,15 +78,15 @@ export class HttpClient {
 
         // If we have a response with error data, enhance the error message
         if (error.response?.data) {
-          const apiError = error.response.data;
+          const apiError = error.response.data as Record<string, unknown>;
           // Create a more user-friendly error message
           if (apiError.message) {
-            error.message = apiError.message;
+            error.message = apiError.message as string;
           } else if (apiError.error) {
-            error.message = apiError.error;
+            error.message = apiError.error as string;
           }
           // Store the full API error data for debugging
-          error.apiError = apiError;
+          (error as Record<string, unknown>).apiError = apiError;
         }
 
         return Promise.reject(error);
@@ -109,17 +110,17 @@ export class HttpClient {
     return response.data;
   }
 
-  public async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  public async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.instance.post<T>(url, data, config);
     return response.data;
   }
 
-  public async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  public async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.instance.put<T>(url, data, config);
     return response.data;
   }
 
-  public async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  public async patch<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.instance.patch<T>(url, data, config);
     return response.data;
   }

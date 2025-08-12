@@ -5,13 +5,14 @@ import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { ErrorAlert } from '../../components/ui/ErrorAlert';
 import { Input } from '../../components/ui/Input';
 import { useAuth } from '../../src/hooks';
 import { ErrorAlertData, PasswordStrength } from '../../src/interfaces';
-import { createRegistrationErrorAlert, formatRegistrationData, getUserTypeOptions, handleSocialAuth } from '../../src/utils/registration.utils';
+import { createRegistrationErrorAlert, formatRegistrationData } from '../../src/utils/registration.utils';
 import { checkPasswordStrength, getFieldError, hasAnyErrors, RegisterFormData, registerSchema } from '../../src/validation';
 import { colors, commonStyles } from '../../styles';
 
@@ -41,7 +42,7 @@ export default function RegisterScreen() {
     control,
     handleSubmit,
     watch,
-    formState: { errors, isValid, touchedFields }
+    formState: { errors, touchedFields }
   } = useForm<RegisterFormData>({
     resolver: yupResolver(registerSchema),
     mode: 'onChange', // Changed to onChange for real-time validation
@@ -70,7 +71,7 @@ export default function RegisterScreen() {
   }, [currentPassword]);
 
   // User type options for the form
-  const userTypeOptions = getUserTypeOptions();
+  // const userTypeOptions = getUserTypeOptions();
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
@@ -99,11 +100,11 @@ export default function RegisterScreen() {
     }
   };
 
-  const onSocialAuth = (provider: 'google' | 'facebook') => {
-    const errorAlert = handleSocialAuth(provider);
-    setErrorAlertData(errorAlert);
-    setShowErrorAlert(true);
-  };
+  // const onSocialAuth = (provider: 'google' | 'facebook') => {
+  //   const errorAlert = handleSocialAuth(provider);
+  //   setErrorAlertData(errorAlert);
+  //   setShowErrorAlert(true);
+  // };
 
   // Handle retry for registration
   const handleRetry = () => {
@@ -166,7 +167,7 @@ export default function RegisterScreen() {
                       onBlur={onBlur}
                       icon="person"
                       returnKeyType="next"
-                      error={getFieldError(errors, 'name')}
+                      error={getFieldError(errors, 'name') || ''}
                       autoCapitalize="words"
                     />
                   )}
@@ -187,7 +188,7 @@ export default function RegisterScreen() {
                       autoComplete="email"
                       icon="mail"
                       returnKeyType="next"
-                      error={getFieldError(errors, 'email')}
+                      error={getFieldError(errors, 'email') || ''}
                     />
                   )}
                 />
@@ -206,7 +207,7 @@ export default function RegisterScreen() {
                         secureTextEntry
                         icon="lock-closed"
                         returnKeyType="next"
-                        error={getFieldError(errors, 'password')}
+                        error={getFieldError(errors, 'password') || ''}
                         autoComplete="new-password"
                       />
 
@@ -265,7 +266,7 @@ export default function RegisterScreen() {
                       secureTextEntry
                       icon="lock-closed"
                       returnKeyType="done"
-                      error={getFieldError(errors, 'confirm_password')}
+                      error={getFieldError(errors, 'confirm_password') || ''}
                       autoComplete="new-password"
                     />
                   )}
@@ -407,11 +408,11 @@ export default function RegisterScreen() {
         visible={showErrorAlert}
         title={errorAlertData.title}
         message={errorAlertData.message}
-        showRetry={errorAlertData.showRetry}
+        showRetry={errorAlertData.showRetry ?? false}
         onClose={() => setShowErrorAlert(false)}
         onRetry={handleRetry}
-        type={errorAlertData.type}
-        quickAction={errorAlertData.quickAction}
+        type={errorAlertData.type ?? 'error'}
+        {...(errorAlertData.quickAction && { quickAction: errorAlertData.quickAction })}
       />
     </SafeAreaView>
   );

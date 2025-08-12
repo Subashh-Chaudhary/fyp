@@ -32,8 +32,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         error: null,
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to store authentication data securely';
       console.error('Failed to store auth data securely:', error);
-      set({ error: 'Failed to store authentication data securely' });
+      set({ error: errorMessage });
     }
   },
 
@@ -45,8 +46,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Update state
       set({ user });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to store user data securely';
       console.error('Failed to store user data securely:', error);
-      set({ error: 'Failed to store user data securely' });
+      set({ error: errorMessage });
     }
   },
 
@@ -61,8 +63,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Update state
       set({ token });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to store token securely';
       console.error('Failed to store token securely:', error);
-      set({ error: 'Failed to store token securely' });
+      set({ error: errorMessage });
     }
   },
 
@@ -77,8 +80,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Update state
       set({ refreshToken });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to store refresh token securely';
       console.error('Failed to store refresh token securely:', error);
-      set({ error: 'Failed to store refresh token securely' });
+      set({ error: errorMessage });
     }
   },
 
@@ -104,6 +108,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         error: null,
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to clear auth data securely';
       console.error('Failed to clear auth data securely:', error);
       // Still update state even if secure storage fails
       set({
@@ -153,6 +158,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load authentication data';
       console.error('Failed to initialize auth from secure storage:', error);
       set({
         user: null,
@@ -160,7 +166,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         refreshToken: null,
         isAuthenticated: false,
         isLoading: false,
-        error: 'Failed to load authentication data',
+        error: errorMessage,
       });
     }
   },

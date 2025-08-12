@@ -6,49 +6,52 @@ import {
   RegisterRequest,
 } from '../interfaces/api.types';
 import { User } from '../interfaces/entities.types';
+
 import { httpClient } from './http.client';
 
 // Transform backend user data to frontend interface
-const transformUserData = (backendUser: any): User => {
+const transformUserData = (backendUser: Record<string, unknown>): User => {
   return {
-    id: backendUser.id,
-    name: backendUser.name,
-    email: backendUser.email,
-    userType: backendUser.user_type, // Map user_type to userType
-    phone: backendUser.phone,
-    address: backendUser.address,
-    avatar_url: backendUser.avatar_url,
-    is_verified: backendUser.is_verified,
-    is_active: backendUser.is_active,
-    is_admin: backendUser.is_admin,
-    created_at: backendUser.created_at,
-    updated_at: backendUser.updated_at,
-    verification_token: backendUser.verification_token,
-    verification_expires_at: backendUser.verification_expires_at,
-    password_reset_token: backendUser.password_reset_token,
-    reset_token_expires_at: backendUser.reset_token_expires_at,
-    refresh_token: backendUser.refresh_token,
-    refresh_token_expires_at: backendUser.refresh_token_expires_at,
-    last_login_at: backendUser.last_login_at,
-    auth_provider: backendUser.auth_provider,
-    provider_id: backendUser.provider_id,
+    id: backendUser.id as string,
+    name: backendUser.name as string,
+    email: backendUser.email as string,
+    userType: backendUser.user_type as 'farmer' | 'expert', // Map user_type to userType
+    phone: backendUser.phone as string,
+    address: backendUser.address as string,
+    avatar_url: backendUser.avatar_url as string,
+    is_verified: backendUser.is_verified as boolean,
+    is_active: backendUser.is_active as boolean,
+    is_admin: backendUser.is_admin as boolean,
+    created_at: backendUser.created_at as string,
+    updated_at: backendUser.updated_at as string,
+    verification_token: backendUser.verification_token as string,
+    verification_expires_at: backendUser.verification_expires_at as string,
+    password_reset_token: backendUser.password_reset_token as string,
+    reset_token_expires_at: backendUser.reset_token_expires_at as string,
+    refresh_token: backendUser.refresh_token as string,
+    refresh_token_expires_at: backendUser.refresh_token_expires_at as string,
+    last_login_at: backendUser.last_login_at as string,
+    auth_provider: backendUser.auth_provider as string,
+    provider_id: backendUser.provider_id as string,
   };
 };
 
 // Validate API response structure
-const validateApiResponse = (response: any, endpoint: string): void => {
+const validateApiResponse = (response: unknown, endpoint: string): void => {
   if (!response || typeof response !== 'object') {
     throw new Error(`Invalid response from ${endpoint}: Response is not an object`);
   }
 
+  const apiResponse = response as Record<string, unknown>;
+
   // Check if the response indicates an error (success: false or statusCode >= 400)
-  if (response.success === false || response.statusCode >= 400) {
+  if (apiResponse.success === false || (apiResponse.statusCode as number) >= 400) {
     // Extract the user-friendly error message from the API response
-    const errorMessage = response.message || response.error || 'Unknown error occurred';
+    const errorMessage = (apiResponse.message as string) || (apiResponse.error as string) || 'Unknown error occurred';
     throw new Error(errorMessage);
   }
 
-  if (!response.data) {
+  if (!apiResponse.data) {
     throw new Error(`Invalid response from ${endpoint}: Missing data field`);
   }
 };
@@ -68,23 +71,24 @@ export class ApiService {
     validateApiResponse(response, 'login');
 
     // Transform the user data to match frontend interface
+    const apiResponse = response as AuthApiResponse;
     return {
-      user: transformUserData(response.data.user),
-      access_token: response.data.access_token,
+      user: transformUserData(apiResponse.data.user as unknown as Record<string, unknown>),
+      access_token: apiResponse.data.access_token,
     };
   }
 
   async register(userData: RegisterRequest): Promise<AuthResponse> {
-    console.log("API Service userData", userData);
     const response = await httpClient.post<AuthApiResponse>(API_ENDPOINTS.AUTH.REGISTER, userData);
 
     // Validate response structure
     validateApiResponse(response, 'register');
 
     // Transform the user data to match frontend interface
+    const apiResponse = response as AuthApiResponse;
     return {
-      user: transformUserData(response.data.user),
-      access_token: response.data.access_token,
+      user: transformUserData(apiResponse.data.user as unknown as Record<string, unknown>),
+      access_token: apiResponse.data.access_token,
     };
   }
 

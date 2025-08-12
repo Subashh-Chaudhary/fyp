@@ -1,114 +1,100 @@
-# Crop Disease Detection System
+# Crop Disease Detection System - Frontend
 
-A production-ready mobile application built with Expo Router (SDK 53) and TypeScript for detecting crop diseases using AI-powered image analysis.
+A modern, well-structured React Native/Expo application for detecting crop diseases using AI-powered image analysis.
 
 ## 🚀 Features
 
-### Core Functionality
+- **Modern Architecture**: Built with React Native, Expo, and TypeScript
+- **Clean Code Structure**: Follows industry best practices and modern patterns
+- **Type Safety**: Full TypeScript implementation with strict mode
+- **State Management**: Zustand for lightweight, performant state management
+- **API Integration**: React Query for efficient data fetching and caching
+- **Form Validation**: Yup schema validation with React Hook Form
+- **Secure Storage**: Expo SecureStore for sensitive data
+- **Error Handling**: Comprehensive error boundaries and user-friendly error messages
+- **Testing**: Jest and React Native Testing Library setup
+- **Code Quality**: ESLint with modern React/TypeScript rules
 
-- **AI-Powered Disease Detection**: Scan crop images to identify diseases with confidence scores
-- **Camera & Gallery Integration**: Capture photos or select existing images for analysis
-- **User Type Support**: Separate interfaces for Farmers and Experts
-- **Scan History**: Track and manage all your previous scans
-- **Real-time Analysis**: Get instant results with treatment recommendations
-
-### User Experience
-
-- **Modern UI/UX**: Clean, intuitive interface with Tailwind CSS styling
-- **Dark/Light Theme**: Toggle between themes for comfortable viewing
-- **Responsive Design**: Optimized for various screen sizes
-- **Offline Support**: Core functionality works without internet connection
-
-### Technical Features
-
-- **TypeScript**: Full type safety throughout the application
-- **State Management**: Zustand for efficient global state management
-- **Navigation**: Expo Router with type-safe routing
-- **Image Processing**: Optimized image handling and compression
-- **Data Persistence**: Local storage for user preferences and scan history
-
-## 📱 Screens
-
-### 1. Welcome Screen
-
-- First-time user onboarding
-- User type selection (Farmer/Expert)
-- App features overview
-
-### 2. Home Tab
-
-- Dashboard with quick stats
-- Recent scans overview
-- Quick action buttons
-- Tips for better results
-
-### 3. Feed Tab
-
-- Latest news and articles
-- Educational content
-- Community updates
-- Expert tips and recommendations
-
-### 4. Scan Tab
-
-- Camera capture interface
-- Gallery image selection
-- Image preview and editing
-- Processing status and results
-
-### 5. History Tab
-
-- Complete scan history
-- Filter by status (All/Completed/Failed)
-- Detailed scan information
-- Export functionality
-
-### 6. Settings Tab
-
-- User profile management
-- Theme preferences
-- Notification settings
-- Data management options
-
-## 🛠 Tech Stack
-
-- **Framework**: Expo SDK 53
-- **Language**: TypeScript
-- **Navigation**: Expo Router v5
-- **State Management**: Zustand
-- **Styling**: Tailwind CSS React Native
-- **UI Components**: Custom component library
-- **Image Handling**: Expo Image Picker & Camera
-- **Storage**: AsyncStorage
-- **Icons**: Expo Vector Icons (Ionicons)
-
-## 📁 Project Structure
+## 🏗️ Project Structure
 
 ```
 frontend/
-├── app/                    # Expo Router screens
-│   ├── (tabs)/            # Tab navigation screens
-│   ├── _layout.tsx        # Root layout
-│   └── welcome.tsx        # Welcome screen
-├── components/            # Reusable UI components
-│   └── ui/               # Base UI components
-├── constants/            # App constants and configuration
-├── hooks/               # Custom React hooks
-├── lib/                 # Utility functions and API clients
-├── store/               # Zustand state management
-├── styles/              # Global styles and Tailwind config
-├── types/               # TypeScript type definitions
-└── assets/              # Images, fonts, and static files
+├── app/                    # Expo Router app directory
+│   ├── (auth)/            # Authentication routes
+│   ├── (tabs)/            # Main app tabs
+│   └── _layout.tsx        # Root layout
+├── components/             # Reusable UI components
+│   ├── ui/                # Base UI components
+│   └── ErrorBoundary.tsx  # Error boundary component
+├── constants/              # App constants and configuration
+│   ├── Colors.ts          # Color system
+│   ├── api.ts             # API configuration
+│   └── index.ts           # Constants index
+├── src/                    # Source code
+│   ├── config/            # App configuration
+│   ├── hooks/             # Custom React hooks
+│   ├── interfaces/        # TypeScript interfaces
+│   ├── middleware/        # App middleware
+│   ├── providers/         # React context providers
+│   ├── services/          # API and business logic services
+│   ├── store/             # Zustand stores
+│   ├── utils/             # Utility functions
+│   └── validation/        # Form validation schemas
+├── styles/                 # Global styles
+├── docs/                   # Documentation
+└── tests/                  # Test files
 ```
 
-## 🚀 Getting Started
+## 🛠️ Tech Stack
+
+- **Framework**: React Native with Expo
+- **Language**: TypeScript (strict mode)
+- **Navigation**: Expo Router
+- **State Management**: Zustand
+- **Data Fetching**: TanStack Query (React Query)
+- **Forms**: React Hook Form + Yup
+- **Storage**: Expo SecureStore
+- **Testing**: Jest + React Native Testing Library
+- **Linting**: ESLint with modern rules
+- **Code Quality**: Prettier (recommended)
+
+## 📱 Key Components
+
+### Authentication System
+
+- Secure login/registration with validation
+- JWT token management
+- Secure storage for sensitive data
+- User role management (farmer/expert)
+
+### API Layer
+
+- Centralized HTTP client with Axios
+- Request/response interceptors
+- Error handling and retry logic
+- Type-safe API responses
+
+### State Management
+
+- Zustand stores for auth and app state
+- Persistent state with secure storage
+- Optimistic updates and error handling
+
+### Form Handling
+
+- React Hook Form for performance
+- Yup validation schemas
+- Real-time validation feedback
+- Error handling and user feedback
+
+## 🚦 Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js 18+
 - npm or yarn
 - Expo CLI
-- iOS Simulator or Android Emulator (optional)
+- iOS Simulator or Android Emulator
 
 ### Installation
 
@@ -123,113 +109,146 @@ frontend/
 
    ```bash
    npm install
+   # or
+   yarn install
    ```
 
 3. **Start the development server**
 
    ```bash
    npm start
+   # or
+   yarn start
    ```
 
 4. **Run on device/simulator**
-
    ```bash
-   # iOS
-   npm run ios
-
-   # Android
-   npm run android
-
-   # Web
-   npm run web
+   npm run ios     # iOS Simulator
+   npm run android # Android Emulator
+   npm run web     # Web browser
    ```
-
-## 🔧 Configuration
-
-### Environment Setup
-
-The app is configured to work out of the box, but you can customize:
-
-- **API Endpoints**: Update `constants/index.ts` with your backend URLs
-- **App Colors**: Modify `tailwind.config.js` for custom theming
-- **Splash Screen**: Update `app.json` for custom splash screen
-
-### Permissions
-
-The app requires the following permissions:
-
-- Camera access for taking photos
-- Photo library access for selecting images
-- Storage access for saving scan results
-
-## 📊 State Management
-
-The app uses Zustand for state management with the following stores:
-
-- **User State**: Authentication and user profile
-- **Theme State**: Dark/light mode preferences
-- **Scan History**: Local storage of scan results
-- **App Settings**: User preferences and configuration
-
-## 🎨 UI Components
-
-### Base Components
-
-- `Button`: Multiple variants (primary, secondary, outline, danger)
-- `Card`: Flexible container with different styles
-- `Input`: Form input with validation states
-- `Modal`: Overlay dialogs and sheets
-
-### Custom Hooks
-
-- `useAuth`: Authentication management
-- `useTheme`: Theme switching and management
-- `useAppStore`: Global state access
-
-## 🔒 Security Features
-
-- Secure image processing
-- Local data encryption
-- Permission-based access control
-- Input validation and sanitization
-
-## 📈 Performance Optimizations
-
-- Image compression and optimization
-- Lazy loading for large lists
-- Efficient state updates
-- Memory management for image processing
 
 ## 🧪 Testing
 
-```bash
-# Run linting
-npm run lint
+### Run Tests
 
-# Type checking
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in CI mode
+npm run test:ci
+```
+
+### Test Structure
+
+- Unit tests for utilities and services
+- Integration tests for API calls
+- Component tests for UI components
+- Test utilities and mocks
+
+## 📝 Code Quality
+
+### Linting
+
+```bash
+npm run lint
+```
+
+### Type Checking
+
+```bash
 npx tsc --noEmit
 ```
 
-## 📦 Building for Production
+### Code Formatting
+
+We recommend using Prettier for consistent code formatting:
 
 ```bash
-# Build for iOS
-expo build:ios
-
-# Build for Android
-expo build:android
-
-# Build for web
-expo build:web
+npx prettier --write .
 ```
+
+## 🏗️ Architecture Principles
+
+### 1. Separation of Concerns
+
+- Clear separation between UI, business logic, and data layers
+- Single responsibility principle for components and functions
+- Modular architecture for easy maintenance
+
+### 2. Type Safety
+
+- Full TypeScript implementation
+- Strict mode enabled
+- Comprehensive interface definitions
+- No `any` types allowed
+
+### 3. Error Handling
+
+- Error boundaries for component errors
+- User-friendly error messages
+- Comprehensive error logging
+- Graceful degradation
+
+### 4. Performance
+
+- React Query for efficient data fetching
+- Optimized re-renders with proper hooks
+- Lazy loading where appropriate
+- Memory leak prevention
+
+### 5. Security
+
+- Secure storage for sensitive data
+- Input validation and sanitization
+- Secure API communication
+- Token-based authentication
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+EXPO_PUBLIC_API_BASE_URL=http://localhost:3000
+EXPO_PUBLIC_ENVIRONMENT=development
+```
+
+### API Configuration
+
+API endpoints and configuration are centralized in `constants/api.ts`:
+
+```typescript
+export const API_CONFIG = {
+  BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL,
+  TIMEOUT: 30000,
+  RETRY_ATTEMPTS: 3,
+  // ... more config
+};
+```
+
+## 📚 Documentation
+
+- [API Documentation](./docs/api/README.md)
+- [Component Library](./docs/components/README.md)
+- [State Management](./docs/store/README.md)
+- [Testing Guide](./docs/testing/README.md)
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+1. Follow the established code structure
+2. Write tests for new features
+3. Ensure TypeScript compilation passes
+4. Follow the linting rules
+5. Update documentation as needed
 
 ## 📄 License
 
@@ -239,21 +258,10 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For support and questions:
 
-- Create an issue in the repository
 - Check the documentation
-- Contact the development team
-
-## 🔮 Future Enhancements
-
-- [ ] Real-time disease tracking
-- [ ] Expert consultation features
-- [ ] Weather integration
-- [ ] Advanced analytics dashboard
-- [ ] Multi-language support
-- [ ] Offline AI model support
-- [ ] Social features and community
-- [ ] Integration with farming equipment
+- Review existing issues
+- Create a new issue with detailed information
 
 ---
 
-**Built with ❤️ for the agricultural community**
+**Built with ❤️ using modern React Native best practices**

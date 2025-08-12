@@ -14,7 +14,7 @@ export interface ErrorContext {
  * Get user-friendly error message based on error type and context
  */
 export const getUserFriendlyErrorMessage = (error: string, context?: ErrorContext): string => {
-  const { userType, email, fieldName } = context || {};
+  const { userType, email } = context || {};
 
   if (error.includes('already exists')) {
     const userTypeText = userType === 'farmer' ? 'farmer' : 'expert';
@@ -111,19 +111,21 @@ export const createErrorAlertData = (
   const message = getUserFriendlyErrorMessage(error, context);
   const type = getAlertType(error);
 
+  const quickAction = getQuickAction(error, context);
+
   return {
     title,
     message,
     showRetry: true,
     type,
-    quickAction: getQuickAction(error, context),
+    ...(quickAction && { quickAction }),
   };
 };
 
 /**
  * Get quick action based on error type
  */
-export const getQuickAction = (error: string, context?: ErrorContext) => {
+export const getQuickAction = (error: string, _context?: ErrorContext) => {
   if (error.includes('already exists')) {
     return {
       label: 'Sign In Instead',
@@ -151,7 +153,7 @@ export const getQuickAction = (error: string, context?: ErrorContext) => {
  * Get field-specific error message
  */
 export const getFieldErrorMessage = (error: string, fieldName?: string): string => {
-  if (!fieldName) return error;
+  if (!fieldName) {return error;}
 
   const fieldErrors: Record<string, string> = {
     email: 'Please enter a valid email address.',

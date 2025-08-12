@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+
 import { NETWORK_CONFIG, getTimeout } from '../config/network.config';
 
 // Simple network configuration for physical devices

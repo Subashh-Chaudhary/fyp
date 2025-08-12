@@ -1,7 +1,7 @@
 import { User } from './entities.types';
 
 // Base API Response Interface - matches your backend response structure
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   statusCode: number;
   message: string;
@@ -39,11 +39,11 @@ export interface AuthApiResponse extends ApiResponse<AuthResponse> {}
 export interface ApiError {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
   timestamp: string;
 }
 
-export interface ApiErrorResponse extends ApiResponse {
+export interface ApiErrorResponse extends ApiResponse<unknown> {
   error: ApiError;
 }
 
@@ -69,3 +69,5 @@ export const MUTATION_KEYS = {
     LOGOUT: ['auth', 'logout'],
   },
 } as const;
+
+// Note: Types are already exported above, no need to re-export

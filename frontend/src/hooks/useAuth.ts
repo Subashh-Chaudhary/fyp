@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
+
 import { validationUtils } from '../../lib/utils';
 import { LoginForm, RegisterForm } from '../interfaces';
 import { httpClient } from '../services/http.client';
 import { useAuthStore } from '../store/auth.store';
+
 import { useLogin, useLogout, useRegister } from './api.hooks';
 
 /**
@@ -13,7 +15,6 @@ import { useLogin, useLogout, useRegister } from './api.hooks';
 export const useAuth = () => {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
   const logoutUser = useAuthStore((state) => state.logout);
 
   // Get auth store actions
@@ -26,7 +27,7 @@ export const useAuth = () => {
       router.replace('/(tabs)');
     },
     onError: (error) => {
-      console.error('Login error:', error);
+      console.log("Login error:", error);
     },
   });
 
@@ -35,10 +36,11 @@ export const useAuth = () => {
       setAuth(response);
       router.replace('/(tabs)');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Registration error:', error);
       // Extract user-friendly error message
-      const errorMessage = error.message || error.apiError?.message || 'Registration failed. Please try again.';
+            const errorMessage = error instanceof Error ? error.message :
+        ((error as Record<string, unknown>)?.apiError as Record<string, unknown>)?.message as string || 'Registration failed. Please try again.';
       console.error('User-friendly error message:', errorMessage);
     },
   });
@@ -75,15 +77,17 @@ export const useAuth = () => {
         email: credentials.email,
         password: credentials.password,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle specific error cases
-      if (error.message?.includes('invalid credentials') || error.message?.includes('wrong password')) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+
+      if (errorMessage.includes('invalid credentials') || errorMessage.includes('wrong password')) {
         throw new Error('Invalid email or password. Please check your credentials and try again.');
-      } else if (error.message?.includes('user not found')) {
+      } else if (errorMessage.includes('user not found')) {
         throw new Error('No account found with this email. Please check your email or create a new account.');
-      } else if (error.message?.includes('network') || error.message?.includes('connection')) {
+      } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
         throw new Error('Network connection error. Please check your internet connection and try again.');
-      } else if (error.message?.includes('timeout')) {
+      } else if (errorMessage.includes('timeout')) {
         throw new Error('Request timed out. Please try again.');
       }
       // Re-throw the error with the original message
@@ -103,15 +107,17 @@ export const useAuth = () => {
         confirm_password: userData.confirm_password,
         user_type: userData.user_type,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle specific error cases
-      if (error.message?.includes('already exists')) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+
+      if (errorMessage.includes('already exists')) {
         throw new Error(`A user with this email already exists. Please try with a different email address.`);
-      } else if (error.message?.includes('validation') || error.message?.includes('invalid')) {
-        throw new Error(`Please check your input and try again. ${error.message}`);
-      } else if (error.message?.includes('network') || error.message?.includes('connection')) {
+      } else if (errorMessage.includes('validation') || errorMessage.includes('invalid')) {
+        throw new Error(`Please check your input and try again. ${errorMessage}`);
+      } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
         throw new Error(`Network connection error. Please check your internet connection and try again.`);
-      } else if (error.message?.includes('timeout')) {
+      } else if (errorMessage.includes('timeout')) {
         throw new Error(`Request timed out. Please try again.`);
       }
       // Re-throw the error with the original message
@@ -140,12 +146,16 @@ export const useAuth = () => {
   }, [user]);
 
   // Helper function to extract user-friendly error message
-  const getErrorMessage = useCallback((mutation: any) => {
-    if (!mutation.error) return null;
+  const getErrorMessage = useCallback((mutation: { error: unknown }) => {
+    if (!mutation.error) {return null;}
 
     // Try to get the most user-friendly error message
-    const error = mutation.error as any;
-    return error.message || error.apiError?.message || 'An error occurred. Please try again.';
+    if (mutation.error instanceof Error) {
+      return mutation.error.message;
+    }
+
+    const error = mutation.error as Record<string, unknown>;
+    return (error.message as string) || ((error.apiError as Record<string, unknown>)?.message as string) || 'An error occurred. Please try again.';
   }, []);
 
   return {
