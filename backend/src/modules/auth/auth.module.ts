@@ -5,7 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TokenManagerService } from 'src/common/services/token-manager.service';
 import { Experts } from '../expert/entities/expert.entity';
 import { ExpertModule } from '../expert/expert.module';
+import { ExpertRepository } from '../expert/repositories';
 import { Users } from '../users/entities/users.entity';
+import { UsersRepository } from '../users/repositories/users.repository';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -23,7 +25,13 @@ import { GoogleStrategy } from './strategies/google-oauth.strategy';
     ExpertModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, TokenManagerService, GoogleStrategy],
+  providers: [
+    AuthService,
+    TokenManagerService,
+    GoogleStrategy,
+    UsersRepository,
+    ExpertRepository,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -73,6 +73,7 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Req() req: Request) {
     try {
+      console.log('Login', loginDto);
       const result = await this.authService.login(loginDto);
 
       return ResponseHelper.success(
