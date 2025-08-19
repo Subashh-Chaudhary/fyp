@@ -23,7 +23,13 @@ export const useAuth = () => {
   // React Query hooks
   const loginMutation = useLogin({
     onSuccess: (response) => {
+      // Store the access token in the HTTP client for future requests
+      httpClient.setAuthToken(response.access_token);
+
+      // Store auth data in the store
       setAuth(response);
+
+      // Redirect to dashboard
       router.replace('/(tabs)');
     },
     onError: (error) => {
@@ -33,13 +39,19 @@ export const useAuth = () => {
 
   const registerMutation = useRegister({
     onSuccess: (response) => {
+      // Store the access token in the HTTP client for future requests
+      httpClient.setAuthToken(response.access_token);
+
+      // Store auth data in the store
       setAuth(response);
+
+      // Redirect to dashboard
       router.replace('/(tabs)');
     },
     onError: (error: unknown) => {
       console.error('Registration error:', error);
       // Extract user-friendly error message
-            const errorMessage = error instanceof Error ? error.message :
+      const errorMessage = error instanceof Error ? error.message :
         ((error as Record<string, unknown>)?.apiError as Record<string, unknown>)?.message as string || 'Registration failed. Please try again.';
       console.error('User-friendly error message:', errorMessage);
     },
@@ -78,18 +90,22 @@ export const useAuth = () => {
         password: credentials.password,
       });
     } catch (error: unknown) {
-      // Handle specific error cases
+      // Handle specific error cases based on backend response
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 
-      if (errorMessage.includes('invalid credentials') || errorMessage.includes('wrong password')) {
+      // Map backend error messages to user-friendly messages
+      if (errorMessage.includes('Email is required') || errorMessage.includes('Password is required')) {
+        throw new Error('Please fill in all required fields');
+      } else if (errorMessage.includes('Please provide a valid email address')) {
+        throw new Error('Please enter a valid email address');
+      } else if (errorMessage.includes('Invalid credentials')) {
         throw new Error('Invalid email or password. Please check your credentials and try again.');
-      } else if (errorMessage.includes('user not found')) {
-        throw new Error('No account found with this email. Please check your email or create a new account.');
       } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
         throw new Error('Network connection error. Please check your internet connection and try again.');
       } else if (errorMessage.includes('timeout')) {
         throw new Error('Request timed out. Please try again.');
       }
+
       // Re-throw the error with the original message
       throw error;
     }

@@ -107,6 +107,10 @@ export const commonStyles = StyleSheet.create({
   px4: { paddingHorizontal: 16 },
   px5: { paddingHorizontal: 20 },
   px6: { paddingHorizontal: 24 },
+  px7: { paddingHorizontal: 28 },
+  px8: { paddingHorizontal: 32 },
+  px9: { paddingHorizontal: 36 },
+  px10: { paddingHorizontal: 40 },
 
   py1: { paddingVertical: 4 },
   py2: { paddingVertical: 8 },
@@ -114,6 +118,10 @@ export const commonStyles = StyleSheet.create({
   py4: { paddingVertical: 16 },
   py5: { paddingVertical: 20 },
   py6: { paddingVertical: 24 },
+  py7: { paddingVertical: 28 },
+  py8: { paddingVertical: 32 },
+  py9: { paddingVertical: 36 },
+  py10: { paddingVertical: 40 },
 
   m1: { margin: 4 },
   m2: { margin: 8 },

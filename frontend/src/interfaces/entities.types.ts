@@ -3,17 +3,17 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  userType: 'farmer' | 'expert'; // This maps to user_type from backend
+  userType?: 'farmer' | 'expert'; // Optional since login response doesn't include this
   phone?: string | null;
   address?: string | null;
   avatar_url?: string | null;
-  is_verified: boolean;
-  is_active: boolean;
-  is_admin: boolean;
-  created_at: string; // Backend returns ISO string
-  updated_at: string; // Backend returns ISO string
+  is_verified?: boolean;
+  is_active?: boolean;
+  is_admin?: boolean;
+  created_at?: string; // Backend returns ISO string
+  updated_at?: string; // Backend returns ISO string
 
-  // Additional fields from backend response
+  // Additional fields from backend response (optional)
   verification_token?: string | null;
   verification_expires_at?: string | null;
   password_reset_token?: string | null;

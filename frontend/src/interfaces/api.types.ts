@@ -4,8 +4,9 @@ import { User } from './entities.types';
 export interface ApiResponse<T = unknown> {
   success: boolean;
   statusCode: number;
-  message: string;
-  data: T;
+  message: string | string[]; // Backend can return string or array of strings
+  data: T | null;
+  error?: string; // Optional error field for some responses
   meta: {
     timestamp: string;
     path: string;

@@ -11,32 +11,72 @@ import { httpClient } from './http.client';
 
 // Transform backend user data to frontend interface
 const transformUserData = (backendUser: Record<string, unknown>): User => {
-  return {
+  const user: User = {
     id: backendUser.id as string,
     name: backendUser.name as string,
     email: backendUser.email as string,
-    userType: backendUser.user_type as 'farmer' | 'expert', // Map user_type to userType
-    phone: backendUser.phone as string,
-    address: backendUser.address as string,
-    avatar_url: backendUser.avatar_url as string,
-    is_verified: backendUser.is_verified as boolean,
-    is_active: backendUser.is_active as boolean,
-    is_admin: backendUser.is_admin as boolean,
-    created_at: backendUser.created_at as string,
-    updated_at: backendUser.updated_at as string,
-    verification_token: backendUser.verification_token as string,
-    verification_expires_at: backendUser.verification_expires_at as string,
-    password_reset_token: backendUser.password_reset_token as string,
-    reset_token_expires_at: backendUser.reset_token_expires_at as string,
-    refresh_token: backendUser.refresh_token as string,
-    refresh_token_expires_at: backendUser.refresh_token_expires_at as string,
-    last_login_at: backendUser.last_login_at as string,
-    auth_provider: backendUser.auth_provider as string,
-    provider_id: backendUser.provider_id as string,
   };
+
+  // Only set optional properties if they exist in the backend response
+  if (backendUser.user_type) {
+    user.userType = backendUser.user_type as 'farmer' | 'expert';
+  }
+  if (backendUser.phone) {
+    user.phone = backendUser.phone as string;
+  }
+  if (backendUser.address) {
+    user.address = backendUser.address as string;
+  }
+  if (backendUser.avatar_url) {
+    user.avatar_url = backendUser.avatar_url as string;
+  }
+  if (backendUser.is_verified !== undefined) {
+    user.is_verified = backendUser.is_verified as boolean;
+  }
+  if (backendUser.is_active !== undefined) {
+    user.is_active = backendUser.is_active as boolean;
+  }
+  if (backendUser.is_admin !== undefined) {
+    user.is_admin = backendUser.is_admin as boolean;
+  }
+  if (backendUser.created_at) {
+    user.created_at = backendUser.created_at as string;
+  }
+  if (backendUser.updated_at) {
+    user.updated_at = backendUser.updated_at as string;
+  }
+  if (backendUser.verification_token) {
+    user.verification_token = backendUser.verification_token as string;
+  }
+  if (backendUser.verification_expires_at) {
+    user.verification_expires_at = backendUser.verification_expires_at as string;
+  }
+  if (backendUser.password_reset_token) {
+    user.password_reset_token = backendUser.password_reset_token as string;
+  }
+  if (backendUser.reset_token_expires_at) {
+    user.reset_token_expires_at = backendUser.reset_token_expires_at as string;
+  }
+  if (backendUser.refresh_token) {
+    user.refresh_token = backendUser.refresh_token as string;
+  }
+  if (backendUser.refresh_token_expires_at) {
+    user.refresh_token_expires_at = backendUser.refresh_token_expires_at as string;
+  }
+  if (backendUser.last_login_at) {
+    user.last_login_at = backendUser.last_login_at as string;
+  }
+  if (backendUser.auth_provider) {
+    user.auth_provider = backendUser.auth_provider as string;
+  }
+  if (backendUser.provider_id) {
+    user.provider_id = backendUser.provider_id as string;
+  }
+
+  return user;
 };
 
-// Validate API response structure
+// Validate API response structure and extract error messages
 const validateApiResponse = (response: unknown, endpoint: string): void => {
   if (!response || typeof response !== 'object') {
     throw new Error(`Invalid response from ${endpoint}: Response is not an object`);
@@ -47,7 +87,20 @@ const validateApiResponse = (response: unknown, endpoint: string): void => {
   // Check if the response indicates an error (success: false or statusCode >= 400)
   if (apiResponse.success === false || (apiResponse.statusCode as number) >= 400) {
     // Extract the user-friendly error message from the API response
-    const errorMessage = (apiResponse.message as string) || (apiResponse.error as string) || 'Unknown error occurred';
+    let errorMessage = 'Unknown error occurred';
+
+    if (apiResponse.message) {
+      if (Array.isArray(apiResponse.message)) {
+        // Handle array of error messages
+        errorMessage = (apiResponse.message as string[]).join(', ');
+      } else {
+        // Handle single error message
+        errorMessage = apiResponse.message as string;
+      }
+    } else if (apiResponse.error) {
+      errorMessage = apiResponse.error as string;
+    }
+
     throw new Error(errorMessage);
   }
 
@@ -73,8 +126,8 @@ export class ApiService {
     // Transform the user data to match frontend interface
     const apiResponse = response as AuthApiResponse;
     return {
-      user: transformUserData(apiResponse.data.user as unknown as Record<string, unknown>),
-      access_token: apiResponse.data.access_token,
+      user: transformUserData(apiResponse.data!.user as unknown as Record<string, unknown>),
+      access_token: apiResponse.data!.access_token,
     };
   }
 
@@ -87,8 +140,8 @@ export class ApiService {
     // Transform the user data to match frontend interface
     const apiResponse = response as AuthApiResponse;
     return {
-      user: transformUserData(apiResponse.data.user as unknown as Record<string, unknown>),
-      access_token: apiResponse.data.access_token,
+      user: transformUserData(apiResponse.data!.user as unknown as Record<string, unknown>),
+      access_token: apiResponse.data!.access_token,
     };
   }
 

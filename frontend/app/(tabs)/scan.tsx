@@ -1,179 +1,119 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import React, { useState } from 'react';
-import { Alert, Image, Text, View } from 'react-native';
+import React from 'react';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { useAppStore } from '../../src/store';
-import { colors, commonStyles, TAB_BAR_HEIGHT } from '../../styles';
+import { colors, commonStyles } from '../../styles';
 
 /**
- * Scan tab screen - Allows users to capture or select images for disease detection
- * Provides camera and gallery access for crop image analysis
+ * Scan screen - Crop disease scanning functionality
+ * Allows users to take photos and scan for diseases
  */
 export default function ScanScreen() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const addScanToHistory = useAppStore((state) => state.addScanToHistory);
-
-  const requestPermissions = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(
-        'Permission Required',
-        'Please grant camera roll permissions to select images.',
-        [{ text: 'OK' }]
-      );
-      return false;
-    }
-    return true;
+  const handleTakePhoto = () => {
+    // TODO: Implement camera functionality
+    console.log('Take photo');
   };
 
-  const pickImage = async () => {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
-
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        setSelectedImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to pick image. Please try again.');
-    }
-  };
-
-  const processImage = async () => {
-    if (!selectedImage) return;
-
-    setIsProcessing(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      const mockResult = {
-        id: Date.now().toString(),
-        imageUrl: selectedImage,
-        cropId: 'Tomato',
-        confidence: 0.85,
-        status: 'completed' as const,
-        createdAt: new Date(),
-        analysis: {
-          detectedDiseases: [
-            {
-              name: 'Early Blight',
-              confidence: 0.85,
-              severity: 'high'
-            }
-          ],
-          recommendations: [
-            'Remove infected leaves immediately',
-            'Improve air circulation around plants',
-            'Apply fungicide treatment',
-          ]
-        }
-      };
-
-      addScanToHistory(mockResult);
-      setSelectedImage(null);
-      setIsProcessing(false);
-
-      Alert.alert(
-        'Analysis Complete',
-        `Detected: ${mockResult.analysis.detectedDiseases[0].name} (${Math.round(mockResult.confidence * 100)}% confidence)`,
-        [{ text: 'OK' }]
-      );
-    }, 2000);
+  const handleChooseFromGallery = () => {
+    // TODO: Implement gallery picker
+    console.log('Choose from gallery');
   };
 
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.bgNeutral50]}>
-      <View style={[commonStyles.flex1, commonStyles.px6, commonStyles.py4, { paddingBottom: TAB_BAR_HEIGHT }]}>
+      <View style={[commonStyles.flex1, commonStyles.px6, commonStyles.py4]}>
         {/* Header */}
-        <View style={[commonStyles.mb6]}>
-          <Text style={[commonStyles.text2xl, commonStyles.fontBold, commonStyles.textPrimary, commonStyles.mb2]}>
-            Scan Crop
+        <View style={[commonStyles.itemsCenter, commonStyles.mb8]}>
+          <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 100, height: 100, backgroundColor: colors.primary[100], borderRadius: 50 }, commonStyles.mb6]}>
+            <Ionicons name="camera" size={48} color={colors.primary[500]} />
+          </View>
+
+          <Text style={[commonStyles.text2xl, commonStyles.fontBold, commonStyles.textPrimary, commonStyles.textCenter, commonStyles.mb3]}>
+            Scan Your Crop
           </Text>
-          <Text style={[commonStyles.textBase, commonStyles.textSecondary]}>
-            Take a photo or select an image to detect crop diseases
+
+          <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter]}>
+            Take a photo or choose from gallery to detect crop diseases
           </Text>
         </View>
 
-        {/* Image Preview */}
-        {selectedImage ? (
-          <Card variant="default" padding="medium" style={commonStyles.mb6}>
-            <View style={commonStyles.itemsCenter}>
-              <Image
-                source={{ uri: selectedImage }}
-                style={[{ width: '100%', height: 200, borderRadius: 12 }, commonStyles.mb4]}
-                resizeMode="cover"
+        {/* Scan Options */}
+        <View style={commonStyles.mb8}>
+          <Card variant="default" padding="large">
+            <View style={[commonStyles.itemsCenter, commonStyles.mb6]}>
+              <Text style={[commonStyles.textLg, commonStyles.fontSemibold, commonStyles.textPrimary, commonStyles.mb2]}>
+                Choose Scan Method
+              </Text>
+              <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter]}>
+                Select how you want to scan your crop
+              </Text>
+            </View>
+
+            <View style={[commonStyles.mb4]}>
+              <Button
+                title="Take Photo"
+                onPress={handleTakePhoto}
+                variant="primary"
+                size="large"
+                icon={<Ionicons name="camera" size={20} color="#ffffff" />}
               />
-              <View style={[commonStyles.flexRow, { gap: 12 }]}>
-                <Button
-                  title="Retake"
-                  onPress={() => setSelectedImage(null)}
-                  variant="outline"
-                  size="medium"
-                />
-                <Button
-                  title="Analyze"
-                  onPress={processImage}
-                  variant="primary"
-                  size="medium"
-                  loading={isProcessing}
-                />
+
+              <Button
+                title="Choose from Gallery"
+                onPress={handleChooseFromGallery}
+                variant="outline"
+                size="large"
+                icon={<Ionicons name="images" size={20} color={colors.primary[600]} />}
+              />
+            </View>
+          </Card>
+        </View>
+
+        {/* Tips */}
+        <View style={commonStyles.mb6}>
+          <Text style={[commonStyles.textLg, commonStyles.fontSemibold, commonStyles.textPrimary, commonStyles.mb4]}>
+            Tips for Better Results
+          </Text>
+
+          <Card variant="outlined" padding="medium">
+            <View style={[commonStyles.mb3]}>
+              <View style={[commonStyles.flexRow, commonStyles.itemsStart]}>
+                <View style={[commonStyles.mt2, commonStyles.mr3, { width: 8, height: 8, backgroundColor: colors.primary[500], borderRadius: 4 }]} />
+                <Text style={[commonStyles.textSm, { color: colors.neutral[700] }, commonStyles.flex1]}>
+                  Ensure good lighting when taking photos
+                </Text>
+              </View>
+
+              <View style={[commonStyles.flexRow, commonStyles.itemsStart]}>
+                <View style={[commonStyles.mt2, commonStyles.mr3, { width: 8, height: 8, backgroundColor: colors.primary[500], borderRadius: 4 }]} />
+                <Text style={[commonStyles.textSm, { color: colors.neutral[700] }, commonStyles.flex1]}>
+                  Focus on the affected area of the plant
+                </Text>
+              </View>
+
+              <View style={[commonStyles.flexRow, commonStyles.itemsStart]}>
+                <View style={[commonStyles.mt2, commonStyles.mr3, { width: 8, height: 8, backgroundColor: colors.primary[500], borderRadius: 4 }]} />
+                <Text style={[commonStyles.textSm, { color: colors.neutral[700] }, commonStyles.flex1]}>
+                  Include both healthy and diseased parts for comparison
+                </Text>
               </View>
             </View>
           </Card>
-        ) : (
-          /* Image Selection Options */
-          <View style={[commonStyles.flex1, commonStyles.justifyCenter]}>
-            <Card variant="default" padding="large">
-              <View style={commonStyles.itemsCenter}>
-                <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 80, height: 80, backgroundColor: colors.primary[100], borderRadius: 40 }, commonStyles.mb6]}>
-                  <Ionicons name="camera" size={40} color={colors.primary[500]} />
-                </View>
+        </View>
 
-                <Text style={[commonStyles.textXl, commonStyles.fontBold, commonStyles.textPrimary, commonStyles.textCenter, commonStyles.mb2]}>
-                  Select Image
-                </Text>
-
-                <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter, commonStyles.mb6]}>
-                  Choose an image from your gallery to analyze for crop diseases
-                </Text>
-
-                <Button
-                  title="Choose from Gallery"
-                  onPress={pickImage}
-                  variant="primary"
-                  size="large"
-                  icon={<Ionicons name="images" size={20} color="#ffffff" />}
-                />
-              </View>
-            </Card>
-          </View>
-        )}
-
-        {/* Tips Section */}
+        {/* Coming Soon */}
         <Card variant="outlined" padding="medium">
-          <View style={[commonStyles.flexRow, commonStyles.itemsStart]}>
-            <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 32, height: 32, backgroundColor: colors.secondary[100], borderRadius: 16, marginRight: 12 }]}>
-              <Ionicons name="bulb" size={16} color={colors.secondary[500]} />
-            </View>
-            <View style={commonStyles.flex1}>
-              <Text style={[commonStyles.textSm, commonStyles.fontMedium, commonStyles.textPrimary, commonStyles.mb1]}>
-                Tips for Better Results
-              </Text>
-              <Text style={[commonStyles.textXs, commonStyles.textSecondary]}>
-                • Ensure good lighting • Focus on affected areas • Include both healthy and diseased parts
-              </Text>
-            </View>
+          <View style={[commonStyles.itemsCenter]}>
+            <Ionicons name="information-circle" size={32} color={colors.neutral[400]} style={commonStyles.mb3} />
+            <Text style={[commonStyles.textBase, commonStyles.fontMedium, { color: colors.neutral[700] }, commonStyles.mb2]}>
+              Coming Soon
+            </Text>
+            <Text style={[commonStyles.textSm, commonStyles.textSecondary, commonStyles.textCenter]}>
+              Advanced scanning features including real-time analysis and disease tracking will be available soon.
+            </Text>
           </View>
         </Card>
       </View>

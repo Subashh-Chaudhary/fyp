@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+
 import { ButtonProps } from '../../src/interfaces';
 import { colors, commonStyles } from '../../styles';
 

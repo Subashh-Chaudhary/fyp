@@ -37,12 +37,19 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
 
   const styles = getAlertStyles();
 
+  // Handle modal close - if no onClose provided, we can't close the modal
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
     <Modal
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <View style={[
         commonStyles.flex1,
@@ -50,11 +57,28 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
         commonStyles.itemsCenter,
         { backgroundColor: 'rgba(0, 0, 0, 0.5)' }
       ]}>
+        {/* Add background tap handler when no close button */}
+        {!onClose && (
+          <TouchableOpacity
+            style={[{ position: 'absolute', width: '100%', height: '100%' }]}
+            activeOpacity={1}
+            onPress={() => {}} // Do nothing on tap, just prevent modal from closing
+          />
+        )}
+
         <View style={[
           commonStyles.bgWhite,
           commonStyles.roundedLg,
           commonStyles.p4,
-          { width: '85%', maxWidth: 350 }
+          {
+            width: '85%',
+            maxWidth: 350,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 8,
+            elevation: 8,
+          }
         ]}>
           {/* Title */}
           {title && (
@@ -62,7 +86,7 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
               commonStyles.textLg,
               commonStyles.fontBold,
               commonStyles.textCenter,
-              commonStyles.mb3,
+              commonStyles.mb4,
               { color: styles.titleColor }
             ]}>
               {title}
@@ -74,7 +98,8 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
             commonStyles.textBase,
             commonStyles.textSecondary,
             commonStyles.textCenter,
-            commonStyles.mb4
+            commonStyles.mb5,
+            { lineHeight: 22 }
           ]}>
             {message}
           </Text>
@@ -83,16 +108,20 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
           {quickAction && (
             <TouchableOpacity
               style={[
-                commonStyles.py2,
+                commonStyles.py3,
                 commonStyles.px4,
                 commonStyles.roundedMd,
                 commonStyles.itemsCenter,
-                commonStyles.mb3,
                 {
                   width: '100%',
                   backgroundColor: quickAction.variant === 'primary' ? styles.buttonBg : colors.neutral[100],
                   borderWidth: 1,
-                  borderColor: quickAction.variant === 'primary' ? styles.buttonBg : colors.neutral[200]
+                  borderColor: quickAction.variant === 'primary' ? styles.buttonBg : colors.neutral[200],
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 2,
+                  elevation: 2,
                 }
               ]}
               onPress={quickAction.onPress}
@@ -100,6 +129,7 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
             >
               <Text style={[
                 commonStyles.fontMedium,
+                commonStyles.textBase,
                 { color: quickAction.variant === 'primary' ? '#ffffff' : colors.neutral[700] }
               ]}>
                 {quickAction.label}
@@ -108,7 +138,12 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
           )}
 
           {/* Action Buttons */}
-          <View style={[commonStyles.flexRow, { gap: 12 }]}>
+          <View style={[
+            commonStyles.flexRow,
+            { gap: 12 },
+            // Adjust layout based on available buttons
+            (!showRetry || !onRetry) && { justifyContent: 'center' }
+          ]}>
             {showRetry && onRetry && (
               <TouchableOpacity
                 style={[
@@ -131,25 +166,28 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity
-              style={[
-                commonStyles.flex1,
-                commonStyles.py2,
-                commonStyles.px4,
-                commonStyles.roundedMd,
-                commonStyles.itemsCenter,
-                { backgroundColor: styles.buttonBg }
-              ]}
-              onPress={onClose}
-              activeOpacity={0.8}
-            >
-              <Text style={[
-                commonStyles.fontMedium,
-                { color: '#ffffff' }
-              ]}>
-                {showRetry && onRetry ? 'Cancel' : 'OK'}
-              </Text>
-            </TouchableOpacity>
+            {/* Only show close button when there's no quickAction and onClose is provided */}
+            {!quickAction && onClose && (
+              <TouchableOpacity
+                style={[
+                  showRetry && onRetry ? commonStyles.flex1 : { minWidth: 120 },
+                  commonStyles.py2,
+                  commonStyles.px4,
+                  commonStyles.roundedMd,
+                  commonStyles.itemsCenter,
+                  { backgroundColor: styles.buttonBg }
+                ]}
+                onPress={onClose}
+                activeOpacity={0.8}
+              >
+                <Text style={[
+                  commonStyles.fontMedium,
+                  { color: '#ffffff' }
+                ]}>
+                  {showRetry && onRetry ? 'Cancel' : 'OK'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>

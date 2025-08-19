@@ -3,9 +3,11 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
+import { forgotPasswordSchema, type ForgotPasswordFormData } from '../../src/validation';
 import { colors, commonStyles } from '../../styles';
 
 /**
@@ -13,32 +15,62 @@ import { colors, commonStyles } from '../../styles';
  * Allows users to reset their password via email
  */
 export default function ForgotPasswordScreen() {
-  const [email, setEmail] = useState('');
+  const [formData, setFormData] = useState<ForgotPasswordFormData>({
+    email: '',
+  });
+  const [errors, setErrors] = useState<Partial<ForgotPasswordFormData>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
 
-  const handleResetPassword = async () => {
-    if (!email) {
-      Alert.alert('Error', 'Please enter your email address');
-      return;
+  // Validate form using schema
+  const validateForm = async (): Promise<boolean> => {
+    try {
+      await forgotPasswordSchema.validate(formData, { abortEarly: false });
+      setErrors({});
+      return true;
+    } catch (validationError: any) {
+      const newErrors: Partial<ForgotPasswordFormData> = {};
+
+      if (validationError.inner) {
+        validationError.inner.forEach((err: any) => {
+          if (err.path) {
+            newErrors[err.path as keyof ForgotPasswordFormData] = err.message;
+          }
+        });
+      }
+
+      setErrors(newErrors);
+      return false;
     }
+  };
 
-    setIsLoading(true);
+  const handleResetPassword = async () => {
+    if (await validateForm()) {
+      setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsSent(true);
-      Alert.alert(
-        'Reset Link Sent',
-        'If an account with that email exists, we&apos;ve sent a password reset link.',
-        [{ text: 'OK' }]
-      );
-    }, 1500);
+      // Simulate API call
+      setTimeout(() => {
+        setIsLoading(false);
+        setIsSent(true);
+        Alert.alert(
+          'Reset Link Sent',
+          'If an account with that email exists, we&apos;ve sent a password reset link.',
+          [{ text: 'OK' }]
+        );
+      }, 1500);
+    }
   };
 
   const handleBackToLogin = () => {
     router.push('/(auth)/login');
+  };
+
+  const updateField = (field: keyof ForgotPasswordFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   return (
@@ -61,24 +93,41 @@ export default function ForgotPasswordScreen() {
 
         {/* Reset Form */}
         <Card variant="default" padding="large" style={commonStyles.mb6}>
-          <Input
-            label="Email"
-            placeholder="Enter your email address"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            icon="mail"
-          />
+          {isSent ? (
+            <View style={[commonStyles.itemsCenter, commonStyles.py6]}>
+              <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 64, height: 64, backgroundColor: colors.success[100], borderRadius: 32 }, commonStyles.mb4]}>
+                <Ionicons name="checkmark-circle" size={32} color={colors.success[600]} />
+              </View>
+              <Text style={[commonStyles.textLg, commonStyles.fontMedium, commonStyles.textPrimary, commonStyles.textCenter, commonStyles.mb2]}>
+                Reset Link Sent!
+              </Text>
+              <Text style={[commonStyles.textSm, commonStyles.textSecondary, commonStyles.textCenter]}>
+                Check your email for password reset instructions
+              </Text>
+            </View>
+          ) : (
+            <>
+              <Input
+                label="Email"
+                placeholder="Enter your email address"
+                value={formData.email}
+                onChangeText={(text) => updateField('email', text)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                icon="mail"
+                error={errors.email || ''}
+              />
 
-          <Button
-            title="Send Reset Link"
-            onPress={handleResetPassword}
-            variant="primary"
-            size="large"
-            loading={isLoading}
-            icon={<Ionicons name="mail" size={20} color="#ffffff" />}
-          />
+              <Button
+                title="Send Reset Link"
+                onPress={handleResetPassword}
+                variant="primary"
+                size="large"
+                loading={isLoading}
+                icon={<Ionicons name="mail" size={20} color="#ffffff" />}
+              />
+            </>
+          )}
         </Card>
 
         {/* Instructions */}

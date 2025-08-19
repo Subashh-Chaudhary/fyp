@@ -1,127 +1,92 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Card } from '../../components/ui/Card';
-import { dateUtils } from '../../lib/utils';
-import { useAppStore } from '../../src/store';
-import { colors, commonStyles, TAB_BAR_HEIGHT } from '../../styles';
+import { colors, commonStyles } from '../../styles';
 
 /**
- * History tab screen - Shows past scan results and analysis history
- * Displays detailed information about previous disease detections
+ * History screen - Shows user's scan history
+ * Displays past crop scans and their results
  */
 export default function HistoryScreen() {
-  const scanHistory = useAppStore((state) => state.scanHistory);
-
-  const renderScanItem = ({ item }: { item: any }) => (
-    <Card variant="default" padding="medium" margin="small">
-      <View style={[commonStyles.flexRow, commonStyles.itemsStart]}>
-        {item.imageUri && (
-          <Image
-            source={{ uri: item.imageUri }}
-            style={[{ width: 60, height: 60, borderRadius: 8, marginRight: 12 }]}
-            resizeMode="cover"
-          />
-        )}
-
-        <View style={commonStyles.flex1}>
-          <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.justifyBetween, commonStyles.mb2]}>
-            <Text style={[commonStyles.textBase, commonStyles.fontSemibold, commonStyles.textPrimary]}>
-              {item.cropId}
-            </Text>
-            <View style={[commonStyles.px2, commonStyles.py1, { backgroundColor: colors.primary[100], borderRadius: 9999 }]}>
-              <Text style={[commonStyles.textXs, commonStyles.fontMedium, { color: colors.primary[700] }]}>
-                {item.status}
-              </Text>
-            </View>
-          </View>
-
-          {item.diseaseName && (
-            <Text style={[commonStyles.textSm, { color: colors.neutral[700] }, commonStyles.mb1]}>
-              Disease: {item.diseaseName}
-            </Text>
-          )}
-
-          {item.confidence && (
-            <Text style={[commonStyles.textSm, commonStyles.textSecondary, commonStyles.mb2]}>
-              Confidence: {Math.round(item.confidence * 100)}%
-            </Text>
-          )}
-
-          <Text style={[commonStyles.textXs, commonStyles.textSecondary]}>
-            {dateUtils.getRelativeTime(item.createdAt)}
-          </Text>
-        </View>
-
-        <TouchableOpacity style={[commonStyles.px2, commonStyles.py1]}>
-          <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
-        </TouchableOpacity>
-      </View>
-    </Card>
-  );
-
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.bgNeutral50]}>
       <View style={[commonStyles.flex1, commonStyles.px6, commonStyles.py4]}>
         {/* Header */}
-        <View style={[commonStyles.mb6]}>
-          <Text style={[commonStyles.text2xl, commonStyles.fontBold, commonStyles.textPrimary, commonStyles.mb2]}>
+        <View style={[commonStyles.itemsCenter, commonStyles.mb8]}>
+          <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 100, height: 100, backgroundColor: colors.secondary[100], borderRadius: 50 }, commonStyles.mb6]}>
+            <Ionicons name="time" size={48} color={colors.secondary[500]} />
+          </View>
+
+          <Text style={[commonStyles.text2xl, commonStyles.fontBold, commonStyles.textPrimary, commonStyles.textCenter, commonStyles.mb3]}>
             Scan History
           </Text>
-          <Text style={[commonStyles.textBase, commonStyles.textSecondary]}>
-            View your previous crop disease analysis results
+
+          <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter]}>
+            View your previous crop scans and analysis results
           </Text>
         </View>
 
-        {/* Stats */}
-        <Card variant="default" padding="medium" style={commonStyles.mb6}>
-          <View style={[commonStyles.flexRow, commonStyles.justifyBetween]}>
-            <View style={commonStyles.itemsCenter}>
-              <Text style={[commonStyles.text2xl, commonStyles.fontBold, { color: colors.primary[500] }]}>
-                {scanHistory.length}
-              </Text>
-              <Text style={[commonStyles.textSm, commonStyles.textSecondary]}>Total Scans</Text>
-            </View>
+        {/* Empty State */}
+        <Card variant="outlined" padding="large">
+          <View style={[commonStyles.itemsCenter]}>
+            <Ionicons name="time-outline" size={64} color={colors.neutral[400]} style={commonStyles.mb4} />
+            <Text style={[commonStyles.textLg, commonStyles.fontSemibold, { color: colors.neutral[700] }, commonStyles.mb2]}>
+              No Scans Yet
+            </Text>
+            <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter, commonStyles.mb4]}>
+              You haven&apos;t scanned any crops yet. Start by taking a photo of your crop to detect diseases.
+            </Text>
 
-            <View style={commonStyles.itemsCenter}>
-              <Text style={[commonStyles.text2xl, commonStyles.fontBold, { color: colors.secondary[500] }]}>
-                {scanHistory.filter(scan => scan.status === 'completed').length}
+            <View style={[commonStyles.flexRow, commonStyles.itemsCenter, { backgroundColor: colors.primary[100], borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 }]}>
+              <Ionicons name="camera" size={20} color={colors.primary[600]} style={commonStyles.mr2} />
+              <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: colors.primary[600] }]}>
+                Start Scanning
               </Text>
-              <Text style={[commonStyles.textSm, commonStyles.textSecondary]}>Completed</Text>
-            </View>
-
-            <View style={commonStyles.itemsCenter}>
-              <Text style={[commonStyles.text2xl, commonStyles.fontBold, { color: colors.neutral[500] }]}>
-                {scanHistory.filter(scan => scan.status === 'processing').length}
-              </Text>
-              <Text style={[commonStyles.textSm, commonStyles.textSecondary]}>Processing</Text>
             </View>
           </View>
         </Card>
 
-        {/* Scan List */}
-        {scanHistory.length > 0 ? (
-          <FlatList
-            data={scanHistory}
-            renderItem={renderScanItem}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: TAB_BAR_HEIGHT }}
-          />
-        ) : (
-          <Card variant="outlined" padding="large">
-            <View style={commonStyles.itemsCenter}>
-              <Ionicons name="time-outline" size={48} color={colors.neutral[400]} />
-              <Text style={[commonStyles.textBase, commonStyles.fontMedium, { color: colors.neutral[700] }, commonStyles.mt3, commonStyles.mb1]}>
-                No scans yet
-              </Text>
-              <Text style={[commonStyles.textSm, commonStyles.textSecondary, commonStyles.textCenter]}>
-                Start by scanning your first crop image
-              </Text>
+        {/* Coming Soon Features */}
+        <View style={commonStyles.mt6}>
+          <Text style={[commonStyles.textLg, commonStyles.fontSemibold, commonStyles.textPrimary, commonStyles.mb4]}>
+            Coming Soon
+          </Text>
+
+          <Card variant="outlined" padding="medium">
+            <View style={[commonStyles.mb3]}>
+              <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb3]}>
+                <Ionicons name="analytics" size={20} color={colors.primary[500]} style={commonStyles.mr3} />
+                <Text style={[commonStyles.textBase, commonStyles.textPrimary]}>
+                  Detailed scan analytics and trends
+                </Text>
+              </View>
+
+              <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb3]}>
+                <Ionicons name="share" size={20} color={colors.primary[500]} style={commonStyles.mr3} />
+                <Text style={[commonStyles.textBase, commonStyles.textPrimary]}>
+                  Share results with experts
+                </Text>
+              </View>
+
+              <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb3]}>
+                <Ionicons name="download" size={20} color={colors.primary[500]} style={commonStyles.mr3} />
+                <Text style={[commonStyles.textBase, commonStyles.textPrimary]}>
+                  Export scan reports
+                </Text>
+              </View>
+
+              <View style={[commonStyles.flexRow, commonStyles.itemsCenter]}>
+                <Ionicons name="search" size={20} color={colors.primary[500]} style={commonStyles.mr3} />
+                <Text style={[commonStyles.textBase, commonStyles.textPrimary]}>
+                  Search and filter scan history
+                </Text>
+              </View>
             </View>
           </Card>
-        )}
+        </View>
       </View>
     </SafeAreaView>
   );

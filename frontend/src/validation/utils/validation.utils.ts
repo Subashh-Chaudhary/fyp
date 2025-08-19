@@ -100,7 +100,7 @@ export const checkPasswordStrength = (password: string) => {
   const score = Object.values(checks).filter(Boolean).length;
 
   let strength: 'weak' | 'fair' | 'good' | 'strong';
-  let feedback: string[] = [];
+  const feedback: string[] = [];
 
   if (score < 3) {
     strength = 'weak';
@@ -112,11 +112,11 @@ export const checkPasswordStrength = (password: string) => {
     strength = 'strong';
   }
 
-  if (!checks.length) feedback.push('At least 8 characters');
-  if (!checks.lowercase) feedback.push('One lowercase letter');
-  if (!checks.uppercase) feedback.push('One uppercase letter');
-  if (!checks.number) feedback.push('One number');
-  if (!checks.special) feedback.push('One special character');
+  if (!checks.length) {feedback.push('At least 8 characters');}
+  if (!checks.lowercase) {feedback.push('One lowercase letter');}
+  if (!checks.uppercase) {feedback.push('One uppercase letter');}
+  if (!checks.number) {feedback.push('One number');}
+  if (!checks.special) {feedback.push('One special character');}
 
   return {
     strength,

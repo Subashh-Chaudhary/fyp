@@ -45,7 +45,7 @@ export class HttpClient {
       }
     );
 
-    // Add response interceptor for debugging
+    // Add response interceptor for debugging and error handling
     this.instance.interceptors.response.use(
       (response) => {
         if (__DEV__) {
@@ -97,11 +97,22 @@ export class HttpClient {
   // Set authentication token
   public setAuthToken(token: string): void {
     this.token = token;
+    if (__DEV__) {
+      console.log('Auth token set in HTTP client');
+    }
   }
 
   // Clear authentication token
   public clearAuthToken(): void {
     this.token = null;
+    if (__DEV__) {
+      console.log('Auth token cleared from HTTP client');
+    }
+  }
+
+  // Get current auth token
+  public getAuthToken(): string | null {
+    return this.token;
   }
 
   // HTTP method shortcuts - return raw axios responses

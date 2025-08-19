@@ -37,7 +37,7 @@ export interface ErrorAlertProps {
   visible: boolean;
   title: string;
   message: string;
-  onClose: () => void;
+  onClose?: () => void;
   onRetry?: () => void;
   showRetry?: boolean;
   type?: 'error' | 'warning' | 'info';

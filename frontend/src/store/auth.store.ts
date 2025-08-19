@@ -170,4 +170,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     }
   },
+
+  // Get current token for API calls
+  getToken: () => {
+    return get().token;
+  },
+
+  // Check if user is authenticated
+  isUserAuthenticated: () => {
+    return get().isAuthenticated && get().token !== null;
+  },
 }));
