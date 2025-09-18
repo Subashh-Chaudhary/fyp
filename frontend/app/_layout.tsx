@@ -62,6 +62,12 @@ export default function RootLayout() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="(stack)"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </AppProvider>
   );

@@ -8,7 +8,7 @@ import { TextInputProps, ViewStyle } from 'react-native';
 
 export interface ButtonProps {
   title: string;
-  onPress: () => void;
+  onPress?: () => void;
   variant?: 'primary' | 'secondary' | 'outline' | 'danger';
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;

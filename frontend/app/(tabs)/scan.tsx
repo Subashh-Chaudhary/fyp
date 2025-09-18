@@ -1,34 +1,54 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Link, router } from 'expo-router';
 import React from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { colors, commonStyles } from '../../styles';
+import { TAB_BAR_HEIGHT, colors, commonStyles } from '../../styles';
 
 /**
  * Scan screen - Crop disease scanning functionality
  * Allows users to take photos and scan for diseases
  */
 export default function ScanScreen() {
-  const handleTakePhoto = () => {
-    // TODO: Implement camera functionality
-    console.log('Take photo');
+  const handleScanCrop = () => {
+    // Navigate to scan camera in the stack navigator.
+    // Use the group in the path to disambiguate from the tabs group.
+    // router.push('/(stack)/scan/camera');
+     console.log('Navigating to camera...');
+  router.push('/(stack)/scan/camera'); // Try without the (stack) group
+  console.log('Navigation attempted');
   };
 
   const handleChooseFromGallery = () => {
-    // TODO: Implement gallery picker
-    console.log('Choose from gallery');
+    // Navigate to gallery picker screen inside the stack group
+    router.push('/(stack)/gallery/picker');
   };
 
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.bgNeutral50]}>
-      <View style={[commonStyles.flex1, commonStyles.px6, commonStyles.py4]}>
+      <View style={[commonStyles.flex1, commonStyles.px6, commonStyles.py4, { paddingBottom: TAB_BAR_HEIGHT }]}>
         {/* Header */}
         <View style={[commonStyles.itemsCenter, commonStyles.mb8]}>
-          <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 100, height: 100, backgroundColor: colors.primary[100], borderRadius: 50 }, commonStyles.mb6]}>
-            <Ionicons name="camera" size={48} color={colors.primary[500]} />
+          {/* Icon with subtle ring */}
+          <View
+            style={[
+              commonStyles.itemsCenter,
+              commonStyles.justifyCenter,
+              {
+                width: 112,
+                height: 112,
+                borderRadius: 56,
+                backgroundColor: colors.primary[50],
+                borderWidth: 2,
+                borderColor: colors.primary[200],
+              },
+              commonStyles.mb6,
+            ]}
+          >
+            <Ionicons name="scan" size={48} color={colors.primary[600]} />
           </View>
 
           <Text style={[commonStyles.text2xl, commonStyles.fontBold, commonStyles.textPrimary, commonStyles.textCenter, commonStyles.mb3]}>
@@ -36,7 +56,7 @@ export default function ScanScreen() {
           </Text>
 
           <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter]}>
-            Take a photo or choose from gallery to detect crop diseases
+            Start a scan or import an image to detect crop diseases
           </Text>
         </View>
 
@@ -45,24 +65,27 @@ export default function ScanScreen() {
           <Card variant="default" padding="large">
             <View style={[commonStyles.itemsCenter, commonStyles.mb6]}>
               <Text style={[commonStyles.textLg, commonStyles.fontSemibold, commonStyles.textPrimary, commonStyles.mb2]}>
-                Choose Scan Method
+                Start a Scan
               </Text>
               <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter]}>
-                Select how you want to scan your crop
+                Choose how you want to analyze your crop
               </Text>
             </View>
 
             <View style={[commonStyles.mb4]}>
+              <View style={commonStyles.mb3}>
+                <Link href="/(stack)/scan/camera" asChild>
+                  <Button
+                    title="Scan Crop"
+                    onPress={handleScanCrop}
+                    variant="primary"
+                    size="large"
+                    icon={<Ionicons name="scan" size={20} color="#ffffff" />}
+                  />
+                </Link>
+              </View>
               <Button
-                title="Take Photo"
-                onPress={handleTakePhoto}
-                variant="primary"
-                size="large"
-                icon={<Ionicons name="camera" size={20} color="#ffffff" />}
-              />
-
-              <Button
-                title="Choose from Gallery"
+                title="Import from Gallery"
                 onPress={handleChooseFromGallery}
                 variant="outline"
                 size="large"
