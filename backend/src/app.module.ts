@@ -4,17 +4,19 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import databaseConfig from './config/database.config.';
+import cloudinaryConfig from './config/cloudinary.config';
 import { envValidationSchema } from './config/env.validation';
 import { DatabaseService } from './database/database.provider';
 import { AuthModule } from './modules/auth/auth.module';
 import { ExpertModule } from './modules/expert/expert.module';
 import { UsersModule } from './modules/users/users.module';
+import { CropsModule } from './modules/crops/crops.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig],
+      load: [databaseConfig, cloudinaryConfig],
       validationSchema: envValidationSchema,
     }),
     TypeOrmModule.forRootAsync({
@@ -47,6 +49,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     ExpertModule,
     AuthModule,
+    CropsModule,
   ],
   controllers: [AppController],
   providers: [AppService, DatabaseService],

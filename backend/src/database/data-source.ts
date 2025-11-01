@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
 import { Experts } from '../modules/expert/entities/expert.entity';
 import { Users } from '../modules/users/entities/users.entity';
+import { Crops } from '../modules/crops/entities/crop.entity';
 
 // Load environment variables
 config();
@@ -13,7 +14,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [Experts, Users],
+  entities: [Experts, Users, Crops],
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
   migrationsTableName: 'migrations',
   synchronize: false,

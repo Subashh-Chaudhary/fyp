@@ -24,10 +24,10 @@ export const useAuth = () => {
   const loginMutation = useLogin({
     onSuccess: (response) => {
       // Store the access token in the HTTP client for future requests
-      httpClient.setAuthToken(response.access_token);
+      // httpClient.setAuthToken(response.access_token);
 
-      // Store auth data in the store
-      setAuth(response);
+      // // Store auth data in the store
+      // setAuth(response);
 
       // Redirect to dashboard
       router.replace('/(tabs)');
