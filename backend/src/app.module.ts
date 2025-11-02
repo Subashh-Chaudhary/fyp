@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ExpertModule } from './modules/expert/expert.module';
 import { UsersModule } from './modules/users/users.module';
 import { CropsModule } from './modules/crops/crops.module';
+import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { CropsModule } from './modules/crops/crops.module';
     ExpertModule,
     AuthModule,
     CropsModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService, DatabaseService],

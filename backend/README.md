@@ -91,3 +91,53 @@ This project follows standardized API response formats:
 ## 🤝 Contributing
 
 Please read the documentation in the respective module directories before contributing to specific features.
+
+## 🧠 AI Prediction Endpoint (Testing)
+
+This project exposes a prediction endpoint that accepts an image and returns the predicted class and confidence.
+
+- Method: `POST`
+- URL: `http://localhost:3001/ai/predict`
+- Content-Type: `multipart/form-data`
+- Field name: `image`
+
+Prerequisites:
+
+- Ensure your model file path is configured in `.env` (or defaults to `./epoch_06.keras`). Example:
+
+```
+MODEL_PATH=./epoch_06.keras
+PORT=3001
+```
+
+### Quick test with curl
+
+Use the helper script:
+
+```bash
+./scripts/test-predict.sh /absolute/path/to/leaf.jpg 3001
+```
+
+Or directly:
+
+```bash
+curl -X POST \
+  -F "image=@/absolute/path/to/leaf.jpg" \
+  http://localhost:3001/ai/predict
+```
+
+Expected response:
+
+```json
+{
+  "index": 2,
+  "confidence": 0.87,
+  "label": "Corn_(maize)___Northern_Leaf_Blight"
+}
+```
+
+Tips:
+
+- On server startup, look for logs: "Model loaded successfully!" to confirm the model path is correct.
+- If you want readable class names, create `models/labels.txt` (one label per line). Otherwise, the API returns `Class <index>`.
+- If you run in Docker, map the model file into the container and align `PORT`/exposed port.

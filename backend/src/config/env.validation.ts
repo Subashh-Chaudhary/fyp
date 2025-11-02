@@ -10,6 +10,8 @@ export const envValidationSchema = Joi.object({
     .valid('development', 'production', 'test')
     .default('development'),
   JWT_SECRET: Joi.string().required(),
+  PORT: Joi.number().optional().default(3001),
+  MODEL_PATH: Joi.string().optional(),
 
   // Admin Credentials
   ADMIN_EMAIL: Joi.string().email().required(),
