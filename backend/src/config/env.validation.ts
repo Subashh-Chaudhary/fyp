@@ -11,7 +11,6 @@ export const envValidationSchema = Joi.object({
     .default('development'),
   JWT_SECRET: Joi.string().required(),
   PORT: Joi.number().optional().default(3001),
-  MODEL_PATH: Joi.string().optional(),
 
   // Admin Credentials
   ADMIN_EMAIL: Joi.string().email().required(),
@@ -25,18 +24,21 @@ export const envValidationSchema = Joi.object({
   CLOUDINARY_CLOUD_NAME: Joi.string().optional(),
   CLOUDINARY_API_KEY: Joi.string().optional(),
   CLOUDINARY_API_SECRET: Joi.string().optional(),
-})
-  .custom((value, helpers) => {
-    const hasUrl = !!value.CLOUDINARY_URL;
-    const hasParts =
-      !!value.CLOUDINARY_CLOUD_NAME &&
-      !!value.CLOUDINARY_API_KEY &&
-      !!value.CLOUDINARY_API_SECRET;
-    if (!hasUrl && !hasParts) {
-      return helpers.error('any.invalid', {
-        message:
-          'Provide either CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET',
-      });
-    }
-    return value;
-  });
+
+  // ML service (Python FastAPI)
+  ML_SERVICE_URL: Joi.string().uri().optional(),
+  ML_PREDICT_PATH: Joi.string().optional().default('/predict'),
+}).custom((value, helpers) => {
+  const hasUrl = !!value.CLOUDINARY_URL;
+  const hasParts =
+    !!value.CLOUDINARY_CLOUD_NAME &&
+    !!value.CLOUDINARY_API_KEY &&
+    !!value.CLOUDINARY_API_SECRET;
+  if (!hasUrl && !hasParts) {
+    return helpers.error('any.invalid', {
+      message:
+        'Provide either CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET',
+    });
+  }
+  return value;
+});

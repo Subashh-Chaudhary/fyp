@@ -1,6 +1,6 @@
 # AI Module
 
-This module exposes a `/ai/predict` endpoint that accepts an image file and returns the top prediction from a TensorFlow.js model.
+Deprecated: The in-process AI module and /ai/predict endpoint have been removed. The backend now calls the external Python ML service via MlClientService.
 
 ## Model format (important)
 

@@ -20,6 +20,7 @@ import { memoryStorage } from 'multer';
 import { ResponseHelper } from 'src/common/helpers/response.helper';
 import { CreateCropDto, UpdateCropDto } from './dtos';
 import { CropsService } from './crops.service';
+import { CropsMlService } from './crops-ml.service';
 
 function imageFileFilter(req: any, file: any, cb: any) {
   if (!file) return cb(null, true);
@@ -31,7 +32,10 @@ function imageFileFilter(req: any, file: any, cb: any) {
 
 @Controller('')
 export class CropsController {
-  constructor(private readonly cropsService: CropsService) {}
+  constructor(
+    private readonly cropsService: CropsService,
+    private readonly cropsMlService: CropsMlService,
+  ) {}
 
   @Post('crops')
   @UseInterceptors(
@@ -46,11 +50,40 @@ export class CropsController {
     @UploadedFile() file: any,
     @Res() res: Response,
   ) {
-    const crop = await this.cropsService.create(dto, { file });
+    // Always run ML prediction and persist disease/solution, then create crop with disease_id and report
+    const { crop, prediction, disease, solution, report, history } =
+      await this.cropsMlService.predictAndCreateCrop(dto, file);
+
     const response = ResponseHelper.created(
-      crop,
-      'Crop created successfully',
+      { crop, prediction, disease, solution, report, history },
+      'Crop created with ML prediction',
       '/crops',
+      'POST',
+    );
+    return res.status(response.statusCode).json(response);
+  }
+
+  // New endpoint to run ML prediction via Python service and persist disease/solution/crop
+  @Post('crop')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      fileFilter: imageFileFilter,
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  async predictAndCreate(
+    @Body() dto: CreateCropDto,
+    @UploadedFile() file: any,
+    @Res() res: Response,
+  ) {
+    const { crop, prediction, disease } =
+      await this.cropsMlService.predictAndCreateCrop(dto, file);
+
+    const response = ResponseHelper.created(
+      { crop, prediction, disease },
+      'Crop created with ML prediction',
+      '/crop',
       'POST',
     );
     return res.status(response.statusCode).json(response);

@@ -5,19 +5,21 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import databaseConfig from './config/database.config.';
 import cloudinaryConfig from './config/cloudinary.config';
+import mlConfig from './config/ml.config';
 import { envValidationSchema } from './config/env.validation';
 import { DatabaseService } from './database/database.provider';
 import { AuthModule } from './modules/auth/auth.module';
 import { ExpertModule } from './modules/expert/expert.module';
 import { UsersModule } from './modules/users/users.module';
 import { CropsModule } from './modules/crops/crops.module';
-import { AiModule } from './modules/ai/ai.module';
+import { HistoriesModule } from './modules/histories/histories.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, cloudinaryConfig],
+      load: [databaseConfig, cloudinaryConfig, mlConfig],
       validationSchema: envValidationSchema,
     }),
     TypeOrmModule.forRootAsync({
@@ -51,7 +53,8 @@ import { AiModule } from './modules/ai/ai.module';
     ExpertModule,
     AuthModule,
     CropsModule,
-    AiModule,
+    HistoriesModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService, DatabaseService],

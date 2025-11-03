@@ -54,7 +54,8 @@ export class CloudinaryService {
         const stream = cloudinary.uploader.upload_stream(
           { folder, resource_type: 'image', ...options },
           (error, result) => {
-            if (error || !result) return reject(error || new Error('Upload failed'));
+            if (error || !result)
+              return reject(error || new Error('Upload failed'));
             resolve({ secure_url: result.secure_url });
           },
         );

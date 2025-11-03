@@ -28,7 +28,10 @@ export class CropsService {
     return user;
   }
 
-  async create(dto: CreateCropDto, opts?: { file?: any }): Promise<Crops> {
+  async create(
+    dto: CreateCropDto,
+    opts?: { file?: any; diseaseId?: string },
+  ): Promise<Crops> {
     let user: Users | undefined;
     if (dto.user_id) {
       user = await this.ensureUser(dto.user_id);
@@ -45,7 +48,7 @@ export class CropsService {
     const crop = this.cropsRepository.create({
       user: user as any,
       image_url: secureUrl,
-      disease_id: dto.disease_id ?? null,
+      disease_id: opts?.diseaseId ?? dto.disease_id ?? null,
       scanned_at: dto.scanned_at ? new Date(dto.scanned_at) : new Date(),
     });
     return this.cropsRepository.save(crop);
@@ -84,7 +87,11 @@ export class CropsService {
     return crop;
   }
 
-  async update(id: string, dto: UpdateCropDto, opts?: { file?: any }): Promise<Crops> {
+  async update(
+    id: string,
+    dto: UpdateCropDto,
+    opts?: { file?: any },
+  ): Promise<Crops> {
     const crop = await this.findById(id);
 
     const payload: Partial<Crops> = {};

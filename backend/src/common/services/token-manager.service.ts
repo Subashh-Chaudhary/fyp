@@ -64,7 +64,7 @@ export class TokenManagerService {
       return {
         isValid: false,
         isExpired: true,
-        message: 'Token or expiration date is missing'
+        message: 'Token or expiration date is missing',
       };
     }
 
@@ -75,13 +75,13 @@ export class TokenManagerService {
       return {
         isValid: false,
         isExpired: true,
-        message: 'Token has expired'
+        message: 'Token has expired',
       };
     }
 
     return {
       isValid: true,
-      isExpired: false
+      isExpired: false,
     };
   }
 
@@ -114,19 +114,28 @@ export class TokenManagerService {
     const cleanedUser = { ...user };
 
     // Clean verification token
-    if (cleanedUser.verification_token && this.isTokenExpired(cleanedUser.verification_expires_at)) {
+    if (
+      cleanedUser.verification_token &&
+      this.isTokenExpired(cleanedUser.verification_expires_at)
+    ) {
       cleanedUser.verification_token = null;
       cleanedUser.verification_expires_at = null;
     }
 
     // Clean password reset token
-    if (cleanedUser.password_reset_token && this.isTokenExpired(cleanedUser.reset_token_expires)) {
+    if (
+      cleanedUser.password_reset_token &&
+      this.isTokenExpired(cleanedUser.reset_token_expires)
+    ) {
       cleanedUser.password_reset_token = null;
       cleanedUser.reset_token_expires = null;
     }
 
     // Clean refresh token
-    if (cleanedUser.refresh_token && this.isTokenExpired(cleanedUser.refresh_token_expires_at)) {
+    if (
+      cleanedUser.refresh_token &&
+      this.isTokenExpired(cleanedUser.refresh_token_expires_at)
+    ) {
       cleanedUser.refresh_token = null;
       cleanedUser.refresh_token_expires_at = null;
     }

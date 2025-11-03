@@ -7,9 +7,12 @@ export type CloudinaryConfig = {
   url?: string;
 };
 
-export default registerAs('cloudinary', (): CloudinaryConfig => ({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  url: process.env.CLOUDINARY_URL,
-}));
+export default registerAs(
+  'cloudinary',
+  (): CloudinaryConfig => ({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    url: process.env.CLOUDINARY_URL,
+  }),
+);
