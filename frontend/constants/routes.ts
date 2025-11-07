@@ -7,4 +7,8 @@ export const ROUTES = {
   HISTORY: '/(tabs)/history',
   SETTINGS: '/(tabs)/settings',
   RESULT: '/result',
+  ABOUT: '/(stack)/about',
+  TERMS: '/(stack)/terms',
+  PRIVACY: '/(stack)/privacy',
+  HELP: '/(stack)/help',
 } as const;

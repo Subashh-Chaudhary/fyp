@@ -3,6 +3,8 @@ import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useRouter } from 'expo-router';
+import { APP_INFO_ITEMS } from '../../constants';
 import { useAuth } from '../../src/hooks';
 import { colors, commonStyles } from '../../styles';
 
@@ -12,6 +14,7 @@ import { colors, commonStyles } from '../../styles';
  */
 export default function SettingsScreen() {
   const { logout } = useAuth();
+  const router = useRouter();
 
   const handleLogout = async () => {
     try {
@@ -60,22 +63,15 @@ export default function SettingsScreen() {
     console.log('Navigate to delete account');
   };
 
-  // App Information section handlers
-  const handleAbout = () => {
-    console.log('Navigate to about page');
-  };
+  // App Information section handlers handled via routes in APP_INFO_ITEMS
 
-  const handleTermsConditions = () => {
-    console.log('Navigate to terms & conditions');
-  };
-
-  const handlePrivacyPolicy = () => {
-    console.log('Navigate to privacy policy');
-  };
-
-  const handleHelpSupport = () => {
-    console.log('Navigate to help & support');
-  };
+  // Map static info keys to local handlers
+  const appInfoHandlers: Record<string, () => void> = APP_INFO_ITEMS.reduce((acc, item) => {
+    if (item.route) {
+      acc[item.key] = () => router.push(item.route as any);
+    }
+    return acc;
+  }, {} as Record<string, () => void>);
 
   const renderSettingItem = (
     icon: keyof typeof Ionicons.glyphMap,
@@ -259,30 +255,16 @@ export default function SettingsScreen() {
         {/* App Information Section */}
         {renderSection('App Information', (
           <>
-            {renderSettingItem(
-              'information-circle-outline',
-              'About',
-              'App version and information',
-              handleAbout
-            )}
-            {renderSettingItem(
-              'document-text-outline',
-              'Terms & Conditions',
-              'Read our terms of service',
-              handleTermsConditions
-            )}
-            {renderSettingItem(
-              'shield-checkmark-outline',
-              'Privacy Policy',
-              'Learn about data privacy',
-              handlePrivacyPolicy
-            )}
-            {renderSettingItem(
-              'help-circle-outline',
-              'Help & Support',
-              'Get help and contact support',
-              handleHelpSupport
-            )}
+            {APP_INFO_ITEMS.map((item) => (
+              <React.Fragment key={item.key}>
+                {renderSettingItem(
+                  item.icon as keyof typeof Ionicons.glyphMap,
+                  item.title,
+                  item.subtitle,
+                  appInfoHandlers[item.key]
+                )}
+              </React.Fragment>
+            ))}
           </>
         ))}
 
