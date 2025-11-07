@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../components/ui/Button';
@@ -29,7 +29,10 @@ export default function ScanScreen() {
 
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.bgNeutral50]}>
-      <View style={[commonStyles.flex1, commonStyles.px6, commonStyles.py4, { paddingBottom: TAB_BAR_HEIGHT }]}>
+      <ScrollView
+        contentContainerStyle={[commonStyles.px6, commonStyles.py4, { paddingBottom: TAB_BAR_HEIGHT + 24 }]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={[commonStyles.itemsCenter, commonStyles.mb8]}>
           {/* Icon with subtle ring */}
@@ -61,7 +64,7 @@ export default function ScanScreen() {
         </View>
 
         {/* Scan Options */}
-        <View style={commonStyles.mb8}>
+        <View style={commonStyles.mb4}>
           <Card variant="default" padding="large">
             <View style={[commonStyles.itemsCenter, commonStyles.mb6]}>
               <Text style={[commonStyles.textLg, commonStyles.fontSemibold, commonStyles.textPrimary, commonStyles.mb2]}>
@@ -94,13 +97,13 @@ export default function ScanScreen() {
         </View>
 
         {/* Tips */}
-        <View style={commonStyles.mb6}>
+        <View>
           <Text style={[commonStyles.textLg, commonStyles.fontSemibold, commonStyles.textPrimary, commonStyles.mb4]}>
             Tips for Better Results
           </Text>
 
           <Card variant="outlined" padding="medium">
-            <View style={[commonStyles.mb3]}>
+            <View style={[commonStyles.mb1]}>
               <View style={[commonStyles.flexRow, commonStyles.itemsStart]}>
                 <View style={[commonStyles.mt2, commonStyles.mr3, { width: 8, height: 8, backgroundColor: colors.primary[500], borderRadius: 4 }]} />
                 <Text style={[commonStyles.textSm, { color: colors.neutral[700] }, commonStyles.flex1]}>
@@ -124,20 +127,7 @@ export default function ScanScreen() {
             </View>
           </Card>
         </View>
-
-        {/* Coming Soon */}
-        <Card variant="outlined" padding="medium">
-          <View style={[commonStyles.itemsCenter]}>
-            <Ionicons name="information-circle" size={32} color={colors.neutral[400]} style={commonStyles.mb3} />
-            <Text style={[commonStyles.textBase, commonStyles.fontMedium, { color: colors.neutral[700] }, commonStyles.mb2]}>
-              Coming Soon
-            </Text>
-            <Text style={[commonStyles.textSm, commonStyles.textSecondary, commonStyles.textCenter]}>
-              Advanced scanning features including real-time analysis and disease tracking will be available soon.
-            </Text>
-          </View>
-        </Card>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
