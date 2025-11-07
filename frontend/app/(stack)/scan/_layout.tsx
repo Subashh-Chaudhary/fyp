@@ -11,6 +11,7 @@ export default function ScanLayout() {
       }}
     >
       <Stack.Screen name="camera" />
+      <Stack.Screen name="analyze" />
     </Stack>
   );
 }

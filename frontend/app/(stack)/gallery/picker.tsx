@@ -43,9 +43,11 @@ export default function GalleryPickerScreen() {
   }, []);
 
   const onUseImage = useCallback(() => {
-    // TODO: navigate to analysis screen or return image to previous screen
-    // For now, just go back after selecting
-    router.back();
+    // Navigate to analysis screen with the selected image
+    if (imageUri) {
+      // Use object form so TypeScript typings are satisfied
+      router.push({ pathname: '/(stack)/scan/analyze', params: { image: imageUri } } as any);
+    }
   }, []);
 
   return (

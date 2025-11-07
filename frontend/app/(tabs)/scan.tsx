@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import React from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -74,15 +74,13 @@ export default function ScanScreen() {
 
             <View style={[commonStyles.mb4]}>
               <View style={commonStyles.mb3}>
-                <Link href="/(stack)/scan/camera" asChild>
-                  <Button
-                    title="Scan Crop"
-                    onPress={handleScanCrop}
-                    variant="primary"
-                    size="large"
-                    icon={<Ionicons name="scan" size={20} color="#ffffff" />}
-                  />
-                </Link>
+                <Button
+                  title="Scan Crop"
+                  onPress={handleScanCrop}
+                  variant="primary"
+                  size="large"
+                  icon={<Ionicons name="scan" size={20} color="#ffffff" />}
+                />
               </View>
               <Button
                 title="Import from Gallery"

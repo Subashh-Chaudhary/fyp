@@ -58,10 +58,15 @@ class ApiClient {
       return data;
     } catch (error) {
       console.error('API request failed:', error);
-      return {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      const fallbackResponse: ApiResponse<T> = {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        statusCode: 500,
+        message,
+        data: null as unknown as T,
+        meta: null as any,
       };
+      return fallbackResponse;
     }
   }
 
