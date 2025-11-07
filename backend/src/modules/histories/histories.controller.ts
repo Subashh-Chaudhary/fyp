@@ -3,7 +3,7 @@ import { Response } from 'express';
 import { ResponseHelper } from '../../common/helpers/response.helper';
 import { HistoriesService } from './histories.service';
 
-@Controller('')
+@Controller('scans')
 export class HistoriesController {
   constructor(private readonly historiesService: HistoriesService) {}
 
@@ -60,6 +60,27 @@ export class HistoriesController {
       'History retrieved successfully',
       200,
       `/histories/${id}`,
+      'GET',
+    );
+    return res.status(response.statusCode).json(response);
+  }
+
+  // User-specific histories (paginated)
+  @Get('users/:user_id/histories')
+  async getByUser(
+    @Param('user_id') user_id: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10,
+    @Res() res: Response,
+  ) {
+    const result = await this.historiesService.findAll(page, limit, { user_id });
+    const response = ResponseHelper.paginated(
+      result.items,
+      result.page,
+      result.limit,
+      result.total,
+      'User histories retrieved successfully',
+      `/users/${user_id}/histories`,
       'GET',
     );
     return res.status(response.statusCode).json(response);
