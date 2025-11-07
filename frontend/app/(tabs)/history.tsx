@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card } from '../../components/ui/Card';
-import { colors, commonStyles } from '../../styles';
+import { TAB_BAR_HEIGHT, colors, commonStyles } from '../../styles';
 
 /**
  * History screen - Shows user's scan history
@@ -13,7 +13,11 @@ import { colors, commonStyles } from '../../styles';
 export default function HistoryScreen() {
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.bgNeutral50]}>
-      <View style={[commonStyles.flex1, commonStyles.px6, commonStyles.py4]}>
+      <ScrollView
+        style={commonStyles.flex1}
+        contentContainerStyle={[commonStyles.px6, commonStyles.py4, { paddingBottom: TAB_BAR_HEIGHT + 24 }]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={[commonStyles.itemsCenter, commonStyles.mb8]}>
           <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 100, height: 100, backgroundColor: colors.secondary[100], borderRadius: 50 }, commonStyles.mb6]}>
@@ -87,7 +91,7 @@ export default function HistoryScreen() {
             </View>
           </Card>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
