@@ -86,11 +86,11 @@ export const useLogout = (options?: UseMutationOptions<void, Error, void>) => {
 export const useUpdateProfile = (options?: UseMutationOptions<User, Error, UpdateProfilePayload>) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ['user', 'update-profile'],
+  mutationKey: ['user', 'update-profile'],
     mutationFn: async (payload: UpdateProfilePayload) => {
       return userService.updateProfile(payload);
     },
-  onSuccess: () => {
+    onSuccess: () => {
       // Update auth store user if needed via query invalidation
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.USER });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.PROFILE });
@@ -103,11 +103,11 @@ export const useUpdateProfile = (options?: UseMutationOptions<User, Error, Updat
 export const useUploadAvatar = (options?: UseMutationOptions<{ avatar_url: string | null; user: User | null; }, Error, { userId: string; file: { uri: string; name?: string; type?: string; } }>) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ['user', 'upload-avatar'],
+  mutationKey: ['user', 'upload-avatar'],
     mutationFn: async ({ userId, file }) => {
       return userService.uploadAvatar(userId, file);
     },
-  onSuccess: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.USER });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.PROFILE });
     },

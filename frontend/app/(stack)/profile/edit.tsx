@@ -1,15 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useRouter } from 'expo-router';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
+import { API_ENDPOINTS } from '../../../src/config/api.config';
 import { useAuth } from '../../../src/hooks';
 import { useUpdateProfile, useUploadAvatar } from '../../../src/hooks/api.hooks';
+import { httpClient } from '../../../src/services/http.client';
 import { useAuthStore } from '../../../src/store/auth.store';
 import { colors, commonStyles } from '../../../styles';
 
@@ -24,6 +26,7 @@ export default function EditProfileScreen() {
   const [address, setAddress] = useState(user?.address ?? '');
   const [isActive, setIsActive] = useState(!!user?.is_active);
   const [isAdmin, setIsAdmin] = useState(!!user?.is_admin);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar_url ?? null);
 
@@ -98,10 +101,53 @@ export default function EditProfileScreen() {
     );
   };
 
+  // Pull-to-refresh handler: refetch user profile from backend
+  const onRefresh = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      setRefreshing(true);
+  // Fetch latest user profile (GET /profile)
+      const response = await httpClient.get<any>(API_ENDPOINTS.USER.PROFILE, {
+        params: { id: user.id },
+      });
+      const data = (response as any).data ?? response;
+      const freshUser = (data?.user as any) ?? data;
+      if (freshUser && typeof freshUser === 'object') {
+        await setUser({
+          ...user,
+          ...freshUser,
+        });
+        // Sync local form state with refreshed data
+        setName(freshUser.name ?? user.name);
+        setEmail(freshUser.email ?? user.email);
+        setPhone(freshUser.phone ?? user.phone);
+        setAddress(freshUser.address ?? user.address);
+        setIsActive(!!freshUser.is_active);
+        setIsAdmin(!!freshUser.is_admin);
+        setAvatarPreview(freshUser.avatar_url ?? avatarPreview);
+      }
+    } catch (e) {
+      console.warn('Failed to refresh profile:', e);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [user, avatarPreview, setUser]);
+
   return (
     <SafeAreaView style={[commonStyles.flex1, { backgroundColor: colors.neutral[50] }]}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={commonStyles.flex1}>
-        <ScrollView contentContainerStyle={[commonStyles.px6, commonStyles.py6]} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        style={commonStyles.flex1}
+      >
+        <ScrollView
+          contentContainerStyle={[commonStyles.px6, commonStyles.py6]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary[500]]} tintColor={colors.primary[500]} />}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          contentInsetAdjustmentBehavior="always"
+        >
           {/* Header */}
           <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb6]}>
             <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={[commonStyles.p2, { marginRight: 8 }]}>
@@ -179,21 +225,6 @@ export default function EditProfileScreen() {
                   onValueChange={setIsActive}
                   trackColor={{ false: colors.neutral[300], true: colors.primary[300] }}
                   thumbColor={isActive ? colors.primary[600] : '#f4f3f4'}
-                />
-              </View>
-
-              {/* Admin */}
-              <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.justifyBetween]}>
-                <View>
-                  <Text style={[commonStyles.textBase, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Administrator</Text>
-                  <Text style={[commonStyles.textSm, { color: colors.neutral[500] }]}>Only admins can change this</Text>
-                </View>
-                <Switch
-                  value={isAdmin}
-                  onValueChange={setIsAdmin}
-                  disabled={!canEditAdmin}
-                  trackColor={{ false: colors.neutral[300], true: colors.primary[300] }}
-                  thumbColor={isAdmin ? colors.primary[600] : '#f4f3f4'}
                 />
               </View>
             </View>

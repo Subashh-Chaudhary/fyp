@@ -16,7 +16,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { Request as ExpressRequest, Response } from 'express';
 import { ResponseHelper } from 'src/common/helpers/response.helper';
@@ -214,6 +214,7 @@ export class UsersController {
    * Partially update current user profile (supports name, email, phone, address, is_active)
    */
   @Patch('profile')
+  @UseInterceptors(AnyFilesInterceptor({ storage: memoryStorage() }))
   async patchProfile(
     @Request() req: ExpressRequest & { user: { id: string } },
     @Body() updateData: UpdateUserDto,

@@ -27,10 +27,11 @@ export const API_ENDPOINTS = {
   },
   PROFILE: {
     AVATAR_UPLOAD: '/profile/avatar',
+    UPDATE: '/profile',
   },
   USER: {
-    PROFILE: '/user/profile',
-    UPDATE_PROFILE: '/user/profile',
+    PROFILE: '/profile',
+    UPDATE_PROFILE: '/profile',
     CHANGE_PASSWORD: '/user/change-password',
     DELETE_ACCOUNT: '/user/delete-account',
   },

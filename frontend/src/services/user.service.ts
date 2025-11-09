@@ -20,7 +20,19 @@ export interface UploadAvatarResponse {
 
 export class UserService {
   async updateProfile(payload: UpdateProfilePayload): Promise<User> {
-    const response = await httpClient.put<Record<string, any>>(API_ENDPOINTS.USER.UPDATE_PROFILE, payload);
+    // Backend expects PATCH /profile with partial fields (must include id)
+    const body = {
+      id: payload.id,
+      name: payload.name,
+      phone: payload.phone,
+      address: payload.address,
+      is_active: payload.is_active,
+    };
+    const response = await httpClient.patch<Record<string, any>>(API_ENDPOINTS.PROFILE.UPDATE, body, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
     // Prefer data.user or data
     const data = (response as any).data ?? response;
