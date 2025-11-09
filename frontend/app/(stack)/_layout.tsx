@@ -23,6 +23,7 @@ export default function RootStackLayout() {
           animation: 'slide_from_right',
         }}
       />
+      {/* 'profile' group screens (e.g., profile/edit) are auto-registered by expo-router; no explicit Stack.Screen needed */}
     </Stack>
   );
 }

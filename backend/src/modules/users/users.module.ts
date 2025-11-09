@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CloudinaryService } from '../../common/services/cloudinary.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminSeeder } from '../../database/seeds/admin.seeder';
 import { SocialAuthService } from '../auth/services/social-auth.service';
@@ -14,7 +15,7 @@ import { UsersService } from './users.service';
     ExpertModule, // Import ExpertModule to access ExpertService
   ],
   controllers: [UsersController],
-  providers: [UsersService, UsersRepository, SocialAuthService, AdminSeeder],
+  providers: [UsersService, UsersRepository, SocialAuthService, AdminSeeder, CloudinaryService],
   exports: [UsersService, UsersRepository, SocialAuthService, AdminSeeder], // Export AdminSeeder so DatabaseService can use it
 })
 export class UsersModule {}

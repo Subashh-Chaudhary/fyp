@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { CloudinaryService } from '../../common/services/cloudinary.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { hashPassword } from 'src/common/helpers/password.helper';
 import { Repository } from 'typeorm';
@@ -23,6 +24,7 @@ export class UsersService {
     @InjectRepository(Users)
     private userRepository: Repository<Users>,
     private readonly usersRepository: UsersRepository,
+    private readonly cloudinary: CloudinaryService,
   ) {}
 
   /**
@@ -101,6 +103,11 @@ export class UsersService {
         ([, value]) => value !== undefined && value !== null && value !== '',
       ),
     ) as Partial<UpdateUserDto>;
+
+    // Never allow primary key update
+    if ('id' in filteredData) {
+      delete (filteredData as any).id;
+    }
 
     if (Object.keys(filteredData).length === 0) {
       throw new BadRequestException('No valid data provided for update');
@@ -186,5 +193,24 @@ export class UsersService {
     });
 
     return this.userRepository.save(user);
+  }
+
+  /**
+   * Update user's avatar by uploading to Cloudinary folder 'avatar'
+   * @param id - User ID
+   * @param file - Uploaded image file (buffer, mimetype)
+   * @returns Updated user with new avatar_url
+   */
+  async updateAvatar(id: string, file: any): Promise<Users> {
+    if (!file) {
+      throw new BadRequestException('Avatar image is required');
+    }
+    const user = await this.findById(id);
+    const secureUrl = await this.cloudinary.uploadImageBuffer(file, {
+      folder: 'avatar',
+    });
+    user.avatar_url = secureUrl;
+    await this.userRepository.save(user);
+    return user;
   }
 }

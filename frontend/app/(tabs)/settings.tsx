@@ -26,7 +26,7 @@ export default function SettingsScreen() {
 
   // Profile section handlers
   const handleEditProfile = () => {
-    console.log('Navigate to edit profile');
+    router.push('/(stack)/profile/edit');
   };
 
   const handleDocuments = () => {

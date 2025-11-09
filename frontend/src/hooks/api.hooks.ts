@@ -7,8 +7,10 @@ import {
   QUERY_KEYS,
   RegisterRequest,
 } from '../interfaces/api.types';
+import { User } from '../interfaces/entities.types';
 import { apiService } from '../services/api.service';
 import { httpClient } from '../services/http.client';
+import { UpdateProfilePayload, userService } from '../services/user.service';
 
 // Authentication Hooks
 export const useLogin = (options?: UseMutationOptions<AuthResponse, Error, LoginRequest>) => {
@@ -75,6 +77,39 @@ export const useLogout = (options?: UseMutationOptions<void, Error, void>) => {
     onSuccess: () => {
       // Clear all queries from cache
       queryClient.clear();
+    },
+    ...options,
+  });
+};
+
+// User profile update hook
+export const useUpdateProfile = (options?: UseMutationOptions<User, Error, UpdateProfilePayload>) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['user', 'update-profile'],
+    mutationFn: async (payload: UpdateProfilePayload) => {
+      return userService.updateProfile(payload);
+    },
+  onSuccess: () => {
+      // Update auth store user if needed via query invalidation
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.USER });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.PROFILE });
+    },
+    ...options,
+  });
+};
+
+// Avatar upload hook
+export const useUploadAvatar = (options?: UseMutationOptions<{ avatar_url: string | null; user: User | null; }, Error, { userId: string; file: { uri: string; name?: string; type?: string; } }>) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['user', 'upload-avatar'],
+    mutationFn: async ({ userId, file }) => {
+      return userService.uploadAvatar(userId, file);
+    },
+  onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.USER });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH.PROFILE });
     },
     ...options,
   });

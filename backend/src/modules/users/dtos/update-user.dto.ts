@@ -1,11 +1,13 @@
 import {
   IsEmail,
+  IsBoolean,
   IsOptional,
   IsString,
   IsUrl,
   Matches,
   MaxLength,
   MinLength,
+  IsUUID,
 } from 'class-validator';
 
 /**
@@ -13,6 +15,10 @@ import {
  * All fields are optional to allow partial updates
  */
 export class UpdateUserDto {
+  // Optional id to allow profile endpoints to receive target id via body
+  @IsOptional()
+  @IsUUID('4', { message: 'id must be a valid UUID' })
+  id?: string;
   @IsOptional()
   @IsEmail({}, { message: 'Please provide a valid email address' })
   email?: string;
@@ -44,5 +50,6 @@ export class UpdateUserDto {
   is_verified?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   is_active?: boolean;
 }
