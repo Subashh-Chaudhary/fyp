@@ -24,10 +24,10 @@ export const useAuth = () => {
   const loginMutation = useLogin({
     onSuccess: (response) => {
       // Store the access token in the HTTP client for future requests
-      // httpClient.setAuthToken(response.access_token);
+      httpClient.setAuthToken(response.access_token);
 
-      // // Store auth data in the store
-      // setAuth(response);
+      // Store auth data in the store (persists to secure storage)
+      setAuth(response);
 
       // Redirect to dashboard
       router.replace('/(tabs)');
@@ -148,7 +148,8 @@ export const useAuth = () => {
 
   // Check if user is authenticated
   const isAuthenticated = useCallback(() => {
-    return user !== null;
+    // Prefer store's isAuthenticated flag and token presence for robustness
+    return useAuthStore.getState().isAuthenticated && useAuthStore.getState().token !== null;
   }, [user]);
 
   // Check if user is a farmer

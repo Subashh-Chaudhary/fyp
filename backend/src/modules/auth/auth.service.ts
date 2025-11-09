@@ -429,4 +429,41 @@ export class AuthService {
   ): Promise<boolean> {
     return comparePasswords(plainPassword, hashedPassword);
   }
+
+  /**
+   * Logout user by invalidating refresh token (if provided)
+   * Idempotent: does not throw if token is missing or already invalidated
+   * @param refreshToken - Optional refresh token to revoke
+   * @returns Success message
+   */
+  async logout(refreshToken?: string): Promise<{ message: string }> {
+    if (refreshToken) {
+      try {
+        const user = await AuthHelper.findUserByRefreshToken(
+          refreshToken,
+          this.usersRepository,
+          this.expertsRepository,
+        );
+
+        if (user) {
+          if (user.user_type === 'expert') {
+            await this.expertsRepository.update(user.id, {
+              refresh_token: undefined,
+              refresh_token_expires_at: undefined,
+            });
+          } else {
+            await this.usersRepository.update(user.id, {
+              refresh_token: undefined,
+              refresh_token_expires_at: undefined,
+            });
+          }
+        }
+        // If user not found, treat as already logged out (no error)
+      } catch {
+        // Swallow unexpected errors to keep logout harmless
+      }
+    }
+
+    return { message: 'Logout successful' };
+  }
 }

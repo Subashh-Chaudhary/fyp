@@ -102,6 +102,45 @@ export class AuthController {
   }
 
   /**
+   * Logout user (invalidate refresh token if supplied)
+   * @param refreshToken - Optional refresh token to revoke
+   * @param req - Request object for path and method metadata
+   * @returns Success message
+   */
+  @Post('logout')
+  async logout(
+    @Body('refreshToken') refreshToken: string,
+    @Req() req: Request,
+  ) {
+    try {
+      const result = await this.authService.logout(refreshToken);
+
+      return ResponseHelper.success(
+        result,
+        'Logout successful',
+        HttpStatus.OK,
+        req.url,
+        req.method,
+      );
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        ResponseHelper.error(
+          'Logout failed',
+          'Internal server error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          req.url,
+          req.method,
+        ),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
    * Verify user email with verification token
    * @param token - Verification token from query parameter
    * @param req - Request object for path and method

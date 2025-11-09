@@ -22,4 +22,15 @@ describe('AppController (e2e)', () => {
       .expect(200)
       .expect('Hello World!');
   });
+
+  it('/auth/logout (POST)', () => {
+    return request(app.getHttpServer())
+      .post('/auth/logout')
+      .send({})
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.success).toBe(true);
+        expect(res.body.message).toBe('Logout successful');
+      });
+  });
 });

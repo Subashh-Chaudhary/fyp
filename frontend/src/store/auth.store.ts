@@ -17,23 +17,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // Actions
   setAuth: async (authData: AuthResponse) => {
     try {
-      // Store tokens securely (using access_token as both token and refreshToken for now)
-      await AuthSecureStorage.storeTokens(authData.access_token, authData.access_token);
-
-      // Store user data securely
-      await AuthSecureStorage.storeUserData(JSON.stringify(authData.user));
-
-      // Update state
+      // Optimistically update state so UI/middleware can proceed immediately
       set({
         user: authData.user,
         token: authData.access_token,
-        refreshToken: authData.access_token, // Backend doesn't provide separate refresh token yet
+        refreshToken: authData.access_token,
         isAuthenticated: true,
         error: null,
       });
+
+      // Persist tokens and user data in the background
+      await AuthSecureStorage.storeTokens(authData.access_token, authData.access_token);
+      await AuthSecureStorage.storeUserData(JSON.stringify(authData.user));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to store authentication data securely';
       console.error('Failed to store auth data securely:', error);
+      // Keep optimistic state, but record error
       set({ error: errorMessage });
     }
   },
@@ -108,7 +107,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         error: null,
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to clear auth data securely';
       console.error('Failed to clear auth data securely:', error);
       // Still update state even if secure storage fails
       set({

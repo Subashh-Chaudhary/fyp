@@ -13,13 +13,15 @@ export const useAuthMiddleware = () => {
 
   useEffect(() => {
     // First segment of current route (groups removed by expo-router)
-  const first = segments[0];
+  const rawFirst = segments[0] ?? '';
+  const isGroup = typeof rawFirst === 'string' && rawFirst.startsWith('(');
+  const first = isGroup ? (segments[1] ?? '') : rawFirst;
 
     // Define which top-level route names belong to the auth flow
   const authRoutes = new Set(['login', 'register', 'forgot-password']);
   const publicRoutes = new Set(['welcome', '_sitemap', '']);
-  const inAuthRoutes = authRoutes.has(first);
-  const inPublicRoutes = publicRoutes.has(first ?? '');
+  const inAuthRoutes = authRoutes.has(first as string);
+  const inPublicRoutes = publicRoutes.has((first as string) ?? '');
 
     // Debug logging (only in development)
     if (__DEV__) {
