@@ -14,6 +14,34 @@ export interface ApiResponse<T = unknown> {
   };
 }
 
+// News item and list response types
+export interface NewsItem {
+  id: string;
+  title: string;
+  content?: string;
+  source?: string;
+  publish_date?: string | null;
+  category?: string;
+  url?: string;
+  is_active?: boolean;
+  created_at?: string;
+  last_updated?: string;
+}
+
+export interface NewsPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface NewsListResponse {
+  items: NewsItem[];
+  pagination: NewsPagination;
+}
+
 // Authentication Types
 export interface LoginRequest {
   email: string;

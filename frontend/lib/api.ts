@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from '../constants';
-import { ApiResponse, User } from '../src/interfaces';
+import { getApiConfig } from '../src/config/api.config';
+import { ApiResponse, NewsListResponse, User } from '../src/interfaces';
 
 // Authentication response type
 interface AuthResponse {
@@ -7,8 +8,8 @@ interface AuthResponse {
   token: string;
 }
 
-// Base API configuration
-const API_BASE_URL = API_ENDPOINTS.BASE_URL;
+// Base API configuration - use dynamic config (handles emulator/device URLs)
+const API_BASE_URL = getApiConfig().BASE_URL;
 
 // API client class for making HTTP requests
 class ApiClient {
@@ -130,19 +131,77 @@ class ApiClient {
     const endpoint = cropId ? API_ENDPOINTS.DISEASES.BY_CROP.replace(':cropId', cropId) : API_ENDPOINTS.DISEASES.LIST;
     return this.request(endpoint);
   }
+
+  // News methods
+  // Fetch news page-by-page; when `all=true` it will aggregate pages until there are no more.
+  async getNews(options?: { page?: number; limit?: number; all?: boolean }): Promise<ApiResponse<NewsListResponse>> {
+    const page = options?.page ?? 1;
+    const limit = options?.limit ?? 10;
+    const fetchAll = options?.all ?? false;
+
+    if (!fetchAll) {
+      return this.request<NewsListResponse>(`/news?page=${page}&limit=${limit}`);
+    }
+
+    // fetch all pages
+    let currentPage = 1;
+    const aggregatedItems: any[] = [];
+    let lastResponse: any = null;
+
+    while (true) {
+      // request page
+      // eslint-disable-next-line no-await-in-loop
+      const res = await this.request<NewsListResponse>(`/news?page=${currentPage}&limit=${limit}`);
+      lastResponse = res;
+
+      if (res && res.success && res.data && Array.isArray(res.data.items)) {
+        aggregatedItems.push(...(res.data.items as any));
+      }
+
+      const pagination = (res as ApiResponse<NewsListResponse>)?.data?.pagination;
+      if (!pagination || pagination.hasNext === false) {
+        break;
+      }
+
+      currentPage += 1;
+    }
+
+    // If the last page request failed, propagate that error response instead of forcing success
+    if (lastResponse && lastResponse.success === false) {
+      return lastResponse as ApiResponse<NewsListResponse>;
+    }
+
+    // return a consolidated response preserving top-level shape
+    return {
+      success: true,
+      statusCode: lastResponse?.statusCode ?? 200,
+      message: lastResponse?.message ?? 'News retrieved',
+      data: {
+        items: aggregatedItems,
+        pagination: {
+          page: 1,
+          limit,
+          total: aggregatedItems.length,
+          totalPages: 1,
+          hasNext: false,
+          hasPrev: false,
+        },
+      },
+      meta: lastResponse?.meta ?? null,
+    };
+  }
 }
 
 // Create and export API client instance
 export const apiClient = new ApiClient(API_BASE_URL);
 
-// Export individual methods for convenience
-export const {
-  login,
-  register,
-  logout,
-  uploadImage,
-  getScanResult,
-  getScanHistory,
-  getCrops,
-  getDiseases,
-} = apiClient;
+// Export individual methods bound to the apiClient instance so `this` is preserved when imported separately.
+export const login = (...args: any[]) => (apiClient as any).login(...args);
+export const register = (...args: any[]) => (apiClient as any).register(...args);
+export const logout = (...args: any[]) => (apiClient as any).logout(...args);
+export const uploadImage = (...args: any[]) => (apiClient as any).uploadImage(...args);
+export const getScanResult = (...args: any[]) => (apiClient as any).getScanResult(...args);
+export const getScanHistory = (...args: any[]) => (apiClient as any).getScanHistory(...args);
+export const getCrops = (...args: any[]) => (apiClient as any).getCrops(...args);
+export const getDiseases = (...args: any[]) => (apiClient as any).getDiseases(...args);
+export const getNews = (...args: any[]) => (apiClient as any).getNews(...args);
