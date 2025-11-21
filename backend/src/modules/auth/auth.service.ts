@@ -382,6 +382,9 @@ export class AuthService {
         email: user.email,
         name: user.name,
         password: user.password,
+        // If user is in users table, default to 'farmer' unless is_admin is true
+        user_type: user.is_admin ? 'admin' : 'farmer',
+        is_admin: user.is_admin,
       };
     }
 
@@ -393,6 +396,7 @@ export class AuthService {
         email: expert.email,
         name: expert.name,
         password: expert.password,
+        user_type: 'expert',
       };
     }
 

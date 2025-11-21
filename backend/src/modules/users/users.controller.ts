@@ -159,20 +159,48 @@ export class UsersController {
       );
       return res.status(response.statusCode).json(response);
     }
-    const user = await this.usersService.findById(userId);
+    try {
+      const user = await this.usersService.findById(userId);
 
-    // Remove password from response
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
+      // Remove password from response and set user_type for users
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = user as any;
+      const userWithType = {
+        ...userWithoutPassword,
+        user_type: (user as any).is_admin ? 'admin' : 'farmer',
+      };
 
-    const response = ResponseHelper.success(
-      userWithoutPassword,
-      'Profile retrieved successfully',
-      HttpStatus.OK,
-      '/profile',
-      'GET',
-    );
-    return res.status(response.statusCode).json(response);
+      const response = ResponseHelper.success(
+        userWithType,
+        'Profile retrieved successfully',
+        HttpStatus.OK,
+        '/profile',
+        'GET',
+      );
+      return res.status(response.statusCode).json(response);
+    } catch (e) {
+      // If not found in users table, try experts
+      if (e instanceof NotFoundException) {
+        const expert = await this.expertService.findById(userId);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...expertWithoutPassword } = expert as any;
+        const expertWithType = {
+          ...expertWithoutPassword,
+          user_type: 'expert',
+        };
+
+        const response = ResponseHelper.success(
+          expertWithType,
+          'Profile retrieved successfully',
+          HttpStatus.OK,
+          '/profile',
+          'GET',
+        );
+        return res.status(response.statusCode).json(response);
+      }
+
+      throw e;
+    }
   }
 
   /**

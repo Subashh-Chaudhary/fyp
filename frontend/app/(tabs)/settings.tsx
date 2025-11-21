@@ -13,7 +13,7 @@ import { colors, commonStyles } from '../../styles';
  * Provides access to user settings, profile, and logout
  */
 export default function SettingsScreen() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -32,11 +32,7 @@ export default function SettingsScreen() {
   const handleDocuments = () => {
     console.log('Navigate to documents');
   };
-
-  const handleLinkedAccounts = () => {
-    console.log('Navigate to linked accounts');
-  };
-
+  
   // Preferences section handlers
   const handleNotifications = () => {
     console.log('Navigate to notification settings');
@@ -188,17 +184,11 @@ export default function SettingsScreen() {
               'Update your personal information',
               handleEditProfile
             )}
-            {renderSettingItem(
+            {(user?.userType === 'expert' || (user as any)?.user_type === 'expert') && renderSettingItem(
               'document-outline',
               'Documents',
               'Manage your uploaded documents',
               handleDocuments
-            )}
-            {renderSettingItem(
-              'link-outline',
-              'Linked Accounts',
-              'Connect external accounts',
-              handleLinkedAccounts
             )}
           </>
         ))}

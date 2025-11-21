@@ -133,6 +133,28 @@ export default function EditProfileScreen() {
     }
   }, [user, avatarPreview, setUser]);
 
+  const userType = (user?.userType ?? (user as any)?.user_type ?? '').toLowerCase();
+
+  const userTypeConfig = userType === 'expert' ? {
+    bg: colors.primary[50],
+    border: colors.primary[200],
+    icon: 'school-outline',
+    color: colors.primary[700],
+    label: 'Expert',
+  } : userType === 'farmer' ? {
+    bg: colors.success[50],
+    border: colors.success[200],
+    icon: 'leaf-outline',
+    color: colors.success[700],
+    label: 'Farmer',
+  } : {
+    bg: colors.neutral[100],
+    border: colors.neutral[200],
+    icon: 'person-outline',
+    color: colors.neutral[700],
+    label: 'User',
+  };
+
   return (
     <SafeAreaView style={[commonStyles.flex1, { backgroundColor: colors.neutral[50] }]}>
       <KeyboardAvoidingView
@@ -160,10 +182,40 @@ export default function EditProfileScreen() {
           <View style={[commonStyles.itemsCenter, commonStyles.mb6]}>
             <Avatar uri={avatarPreview} name={initialsName} onEdit={pickImage} loading={uploadAvatar.isPending} />
             <Text style={[commonStyles.textSm, { color: colors.neutral[500], marginTop: 8 }]}>Tap camera to change avatar</Text>
-            {/* Verified badge (read-only) */}
+            {/* User type badge */}
             <View
               style={{
                 marginTop: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: userTypeConfig.bg,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: userTypeConfig.border,
+              }}
+            >
+              <Ionicons
+                name={userTypeConfig.icon as any}
+                size={18}
+                color={userTypeConfig.color}
+              />
+              <View style={{ marginLeft: 8 }}>
+                <Text
+                  style={{
+                    color: userTypeConfig.color,
+                    fontWeight: '700',
+                    fontSize: 14,
+                  }}
+                >
+                  {userTypeConfig.label}
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                marginTop: 4,
                 flexDirection: 'row',
                 alignItems: 'center',
                 backgroundColor: user?.is_verified ? colors.primary[50] : colors.neutral[100],

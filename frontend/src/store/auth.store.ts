@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { httpClient } from '../services/http.client';
 import { User } from '../interfaces';
 import { AuthResponse } from '../interfaces/api.types';
 import { AuthState } from '../interfaces/auth.types';
@@ -28,6 +29,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Persist tokens and user data in the background
       await AuthSecureStorage.storeTokens(authData.access_token, authData.access_token);
+
+      // Ensure HTTP client has the auth token for subsequent requests
+      httpClient.setAuthToken(authData.access_token);
       await AuthSecureStorage.storeUserData(JSON.stringify(authData.user));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to store authentication data securely';
@@ -61,6 +65,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Update state
       set({ token });
+
+      // Ensure HTTP client has the latest token
+      httpClient.setAuthToken(token);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to store token securely';
       console.error('Failed to store token securely:', error);
@@ -106,6 +113,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: false,
         error: null,
       });
+      // Clear HTTP client auth token
+      httpClient.clearAuthToken();
     } catch (error) {
       console.error('Failed to clear auth data securely:', error);
       // Still update state even if secure storage fails
@@ -116,6 +125,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: false,
         error: null,
       });
+      httpClient.clearAuthToken();
     }
   },
 
@@ -137,6 +147,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Update state if we have valid data
       if (token && refreshToken && user) {
+        // Make sure the http client has the token so requests work immediately
+        httpClient.setAuthToken(token);
         set({
           user,
           token,
