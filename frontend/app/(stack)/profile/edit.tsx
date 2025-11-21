@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -132,6 +132,14 @@ export default function EditProfileScreen() {
       setRefreshing(false);
     }
   }, [user, avatarPreview, setUser]);
+
+  // Auto-fetch latest profile when screen mounts or when user id becomes available
+  useEffect(() => {
+    if (!user?.id) return;
+    // call onRefresh to populate the form with freshest server data
+    onRefresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const userType = (user?.userType ?? (user as any)?.user_type ?? '').toLowerCase();
 

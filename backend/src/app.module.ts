@@ -14,6 +14,7 @@ import { UsersModule } from './modules/users/users.module';
 import { CropsModule } from './modules/crops/crops.module';
 import { HistoriesModule } from './modules/histories/histories.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { NewsModule } from './modules/news/news.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     UsersModule,
     ExpertModule,
     AuthModule,
+    NewsModule,
     CropsModule,
     HistoriesModule,
     ReportsModule,
