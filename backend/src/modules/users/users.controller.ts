@@ -15,6 +15,7 @@ import {
   Res,
   UploadedFiles,
   UseInterceptors,
+  NotFoundException,
 } from '@nestjs/common';
 import { AnyFilesInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -22,6 +23,7 @@ import { Request as ExpressRequest, Response } from 'express';
 import { ResponseHelper } from 'src/common/helpers/response.helper';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
+import { ExpertService } from '../expert/expert.service';
 
 /**
  * Users Controller
@@ -30,7 +32,10 @@ import { UsersService } from './users.service';
  */
 @Controller('')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly expertService: ExpertService,
+  ) {}
 
   /**
    * Get all users with pagination
@@ -143,7 +148,7 @@ export class UsersController {
     @Query('id') id: string,
     @Res() res: Response,
   ) {
-    const userId = (req as any)?.user?.id || id || (req.headers['x-user-id'] as string);
+    const userId = (req as any)?.user?.id || (req as any)?.user?.sub || id || (req.headers['x-user-id'] as string);
     if (!userId) {
       const response = ResponseHelper.error(
         'Profile retrieval failed',
@@ -183,7 +188,7 @@ export class UsersController {
     @Body() updateData: UpdateUserDto,
     @Res() res: Response,
   ) {
-    const userId = (req as any)?.user?.id || (updateData as any)?.id || (req.headers['x-user-id'] as string);
+    const userId = (req as any)?.user?.id || (req as any)?.user?.sub || (updateData as any)?.id || (req.headers['x-user-id'] as string);
     if (!userId) {
       const response = ResponseHelper.error(
         'Profile update failed',
@@ -241,7 +246,7 @@ export class UsersController {
 
     // Resolve user id from multiple possible sources
     const userId =
-      (req as any)?.user?.id ||
+      (req as any)?.user?.id || (req as any)?.user?.sub ||
       updateData?.id ||
       rawId ||
       altUserId ||
@@ -259,9 +264,20 @@ export class UsersController {
       );
       return res.status(response.statusCode).json(response);
     }
-    const user = await this.usersService.updateUser(userId, updateData);
+    let updated: any;
+    try {
+      updated = await this.usersService.updateUser(userId, updateData);
+    } catch (e) {
+      if (e instanceof NotFoundException) {
+        // If not found in users table, try updating expert profile
+        updated = await this.expertService.updateExpert(userId, updateData as any);
+      } else {
+        throw e;
+      }
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
+    const { password, ...userWithoutPassword } = updated;
     const response = ResponseHelper.success(
       userWithoutPassword,
       'Profile updated successfully',
@@ -302,7 +318,23 @@ export class UsersController {
     @Res() res: Response,
   ) {
     const file = files?.avatar?.[0] || files?.file?.[0];
-    const userId = (req as any)?.user?.id || body?.id || (req.headers['x-user-id'] as string);
+
+    // Debug info: log body keys and headers to help diagnose missing/invalid id
+    try {
+      // only in dev — lightweight logging
+      // eslint-disable-next-line no-console
+      console.debug('uploadAvatar: bodyKeys=', Object.keys(body || {}), 'files=', Object.keys(files || {}));
+      // eslint-disable-next-line no-console
+      console.debug('uploadAvatar: headers x-user-id=', req.headers['x-user-id']);
+    } catch (e) {
+      // ignore logging errors
+    }
+
+    const userId = (req as any)?.user?.id || (req as any)?.user?.sub || body?.id || (req.headers['x-user-id'] as string);
+
+    // Debug: show resolved userId and its type
+    // eslint-disable-next-line no-console
+    console.debug('uploadAvatar: resolved userId=', userId, 'type=', typeof userId);
     if (!userId) {
       const response = ResponseHelper.error(
         'Avatar update failed',
@@ -313,9 +345,20 @@ export class UsersController {
       );
       return res.status(response.statusCode).json(response);
     }
-    const user = await this.usersService.updateAvatar(userId, file);
+    let updated: any;
+    try {
+      updated = await this.usersService.updateAvatar(userId, file);
+    } catch (e) {
+      if (e instanceof NotFoundException) {
+        // try updating expert avatar if user not found in users table
+        updated = await this.expertService.updateAvatar(userId, file);
+      } else {
+        throw e;
+      }
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
+    const { password, ...userWithoutPassword } = updated;
     const response = ResponseHelper.success(
       userWithoutPassword,
       'Avatar updated successfully',

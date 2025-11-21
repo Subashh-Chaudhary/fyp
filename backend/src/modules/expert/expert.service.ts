@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CloudinaryService } from 'src/common/services/cloudinary.service';
 import { CreateExpertDto } from './dtos/create-expert.dto';
 import { UpdateExpertDto } from './dtos/update-expert.dto';
 import { Experts } from './entities/expert.entity';
@@ -15,6 +16,7 @@ export class ExpertService {
   constructor(
     @InjectRepository(Experts)
     private expertRepository: Repository<Experts>,
+    private readonly cloudinary: CloudinaryService,
   ) {}
 
   /**
@@ -223,6 +225,25 @@ export class ExpertService {
       last_login_at: new Date(),
     });
     return this.findById(id);
+  }
+
+  /**
+   * Update expert's avatar by uploading to Cloudinary folder 'avatar'
+   * @param id - Expert ID
+   * @param file - Uploaded image file (buffer, mimetype)
+   * @returns Updated expert with new avatar_url
+   */
+  async updateAvatar(id: string, file: any): Promise<Experts> {
+    if (!file) {
+      throw new BadRequestException('Avatar image is required');
+    }
+    const expert = await this.findById(id);
+    const secureUrl = await this.cloudinary.uploadImageBuffer(file, {
+      folder: 'avatar',
+    });
+    expert.avatar_url = secureUrl;
+    await this.expertRepository.save(expert);
+    return expert;
   }
 
   /**
