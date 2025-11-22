@@ -1,7 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as MediaLibrary from 'expo-media-library';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Modal, Pressable, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Image, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { httpClient } from '../../src/services/http.client';
 import { useAuthStore } from '../../src/store/auth.store';
@@ -11,7 +15,8 @@ interface HistoryDisease { id: string; name: string; description: string; }
 interface HistorySolution { id: string; description: string; }
 interface HistoryCrop { id: string; image_url: string; disease_id: string; scanned_at: string; }
 interface HistoryReport { id: string; crop: HistoryCrop; disease: HistoryDisease; solution: HistorySolution; generated_at: string; is_varified?: boolean; feedback_id?: string | null }
-interface HistoryItem { id: string; viewed_at: string; created_at: string; report: HistoryReport; }
+interface HistoryUser { id: string; name: string; email?: string; avatar_url?: string }
+interface HistoryItem { id: string; viewed_at: string; created_at: string; report: HistoryReport; user?: HistoryUser }
 interface HistoryPagination { page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean; }
 interface HistoriesResponse { success: boolean; data: { items: HistoryItem[]; pagination: HistoryPagination }; message?: string; }
 
@@ -38,6 +43,117 @@ export default function HistoryScreen() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
   const [previewUri, setPreviewUri] = useState<string | null>(null);
+  const [pdfGenerating, setPdfGenerating] = useState<Record<string, boolean>>({});
+
+  const generateReportHtml = (h: HistoryItem, expert?: any) => {
+    const user = (h as any).user || { name: 'User', email: '' };
+    const report = h.report || ({} as any);
+    const cropImg = report?.crop?.image_url || '';
+    const diseaseName = (report?.disease?.name || 'Unknown').replace(/_/g, ' ');
+    const solution = report?.solution?.description || '';
+    const scannedAt = report?.crop?.scanned_at || report?.generated_at || '';
+    const verified = !!report?.is_varified;
+    const expertHtml = expert ? `<h3>Verified By</h3><p>${expert.name || ''} (${expert.email || ''})</p>` : (verified ? '<p>Verified (expert details not available)</p>' : '<p>Status: Unverified</p>');
+
+    return `
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; color: #222 }
+            .header { text-align: center; margin-bottom: 16px }
+            .section { margin-bottom: 12px }
+            .img { width: 100%; max-height: 400px; object-fit: contain; }
+            .meta { color: #666; font-size: 12px }
+            .badge { display:inline-block; padding:6px 10px; border-radius:12px; font-weight:600 }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Crop Scan Report (Crop Disease Detection System)</h1>
+            <h2>Scan Disease Detection Report</h2>
+            <div class="meta">Generated: ${new Date(report?.generated_at || '').toLocaleString()} — Scanned: ${new Date(scannedAt).toLocaleString()}</div>
+          </div>
+
+          <div class="section">
+            <h2>User</h2>
+            <p><strong>${user.name}</strong><br/>${user.email || ''}</p>
+          </div>
+
+          <div class="section">
+            <h2>Crop Image</h2>
+            ${cropImg ? `<img class="img" src="${cropImg}" />` : '<p>No image available</p>'}
+          </div>
+
+          <div class="section">
+            <h2>Detection</h2>
+            <p><strong>${diseaseName}</strong></p>
+            <p>${report?.disease?.description || ''}</p>
+          </div>
+
+          <div class="section">
+            <h2>Recommended Action</h2>
+            <p>${solution}</p>
+          </div>
+
+          <div class="section">
+            <h2>Verification</h2>
+            ${expertHtml}
+          </div>
+        </body>
+      </html>
+    `;
+  };
+
+  const onDownloadReport = async (h: HistoryItem) => {
+    try {
+      setPdfGenerating((s) => ({ ...s, [h.id]: true }));
+      let expert: any = null;
+      const feedbackId = (h.report as any)?.feedback_id;
+      if (feedbackId) {
+        try {
+          const res = await httpClient.get<any>(`/feedbacks/${feedbackId}`);
+          expert = res?.data?.expert || null;
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      const html = generateReportHtml(h, expert);
+      const { uri } = await Print.printToFileAsync({ html });
+
+      // On Android try to save to Downloads via MediaLibrary first
+      if (Platform.OS === 'android') {
+        try {
+          const { status } = await MediaLibrary.requestPermissionsAsync();
+          if (status === 'granted') {
+            const asset = await MediaLibrary.createAssetAsync(uri);
+            try {
+              // Attempt to place the file in the Downloads album (may vary by device)
+              await MediaLibrary.createAlbumAsync('Download', asset, false);
+            } catch {
+              // ignore album creation error - asset still created
+            }
+            Alert.alert('Saved', 'PDF saved to your device. You can find it in your Files/Downloads.');
+            return;
+          }
+        } catch (e) {
+          // fall back to sharing below
+        }
+      }
+
+      // Fallback: share the file (works on iOS and Android) or show uri on web
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
+      } else {
+        Alert.alert('PDF Generated', `File: ${uri}`);
+      }
+    } catch (e: any) {
+      Alert.alert('Error', e?.message || 'Failed to generate PDF');
+    } finally {
+      setPdfGenerating((s) => ({ ...s, [h.id]: false }));
+    }
+  };
 
   const toggleExpand = useCallback((id: string) => {
     setExpanded((prev) => {
@@ -105,10 +221,14 @@ export default function HistoryScreen() {
               <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>{formatRelative(h.viewed_at)}</Text>
             </View>
             <Text style={[commonStyles.textSm, { color: colors.neutral[600], marginTop: 4 }]} numberOfLines={expandedState ? undefined : 2}>{solution}</Text>
-            <View style={[commonStyles.flexRow, commonStyles.mt3, { gap: 8 }]}> 
-              <View style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.primary[50], borderRadius: 999, borderWidth: 1, borderColor: colors.primary[200], display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4}}>
-                <Ionicons name="download-outline" size={14} color={colors.success[600]} />
-                <Text style={[commonStyles.textXs, { color: colors.primary[700], fontWeight: '600' }]}>Download</Text>
+            <View style={[commonStyles.flexRow, commonStyles.mt3, { gap: 8, alignItems: 'center' }]}> 
+              <View style={{ minWidth: 80 }}>
+                <Button
+                  title="Download"
+                  size="small"
+                  loading={!!pdfGenerating[h.id]}
+                  onPress={() => onDownloadReport(h)}
+                />
               </View>
               <View style={{ marginLeft: 'auto' }}>
                 {h.report?.is_varified ? (
@@ -124,8 +244,7 @@ export default function HistoryScreen() {
                 )}
               </View>
             </View>
-            <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 6 }]}>Generated: {new Date(h.report?.generated_at).toLocaleString()}</Text>
-            <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 2 }]}>Scanned: {new Date(h.report?.crop?.scanned_at).toLocaleString()}</Text>
+            <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 6 }]}>Scanned: {new Date(h.report?.crop?.scanned_at).toLocaleString()}</Text>
             <TouchableOpacity
               onPress={() => toggleExpand(h.id)}
               activeOpacity={0.85}
