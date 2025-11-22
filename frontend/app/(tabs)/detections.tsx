@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Image, Platform, RefreshControl, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -31,6 +31,13 @@ const formatRelative = (iso: string) => {
 
 export default function DetectionsScreen() {
   const user = useAuthStore((s) => s.user);
+  const showToast = (msg: string) => {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(msg, ToastAndroid.SHORT);
+    } else {
+      Alert.alert('', msg);
+    }
+  };
   const [items, setItems] = useState<ReportItem[]>([]);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
@@ -154,17 +161,19 @@ export default function DetectionsScreen() {
                       onPress={async () => {
                         const text = feedbacks[r.id] || '';
                         if (!text.trim()) {
-                          Alert.alert('Validation', 'Please enter feedback before submitting.');
+                          showToast('Please enter feedback before submitting.');
                           return;
                         }
                         try {
                           setSubmitting((s) => ({ ...s, [r.id]: true }));
-                          // Attempt to post feedback to API; fallback to alert on failure
-                          await httpClient.post(`/reports/${r.id}/feedback`, { feedback: text });
+                          // Post feedback to /feedbacks endpoint with required payload
+                          const payload = { report_id: r.id, expert_id: user?.id, feedback_text: text } as Record<string, any>;
+                          const res = await httpClient.post<any>('/feedbacks', payload);
                           setFeedbacks((s) => ({ ...s, [r.id]: '' }));
-                          Alert.alert('Success', 'Feedback submitted successfully.');
+                          const msg = (res as any)?.message || 'Feedback created successfully.';
+                          showToast(msg);
                         } catch (e: any) {
-                          Alert.alert('Error', e?.message || 'Failed to submit feedback');
+                          showToast(e?.message || 'Failed to submit feedback');
                         } finally {
                           setSubmitting((s) => ({ ...s, [r.id]: false }));
                         }
@@ -178,7 +187,7 @@ export default function DetectionsScreen() {
         </View>
       </Card>
     );
-  }, []);
+  }, [feedbacks, submitting, verifySubmitting, user, items]);
 
   const listEmpty = useMemo(() => (
     <View>
