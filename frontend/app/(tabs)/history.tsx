@@ -18,6 +18,7 @@ interface HistoryReport { id: string; crop: HistoryCrop; disease: HistoryDisease
 interface HistoryUser { id: string; name: string; email?: string; avatar_url?: string }
 interface HistoryItem { id: string; viewed_at: string; created_at: string; report: HistoryReport; user?: HistoryUser }
 interface HistoryPagination { page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean; }
+interface FeedbackItem { id: string; feedback_text: string; varified_at?: string; created_at: string; updated_at: string; expert?: { id: string; name: string; email?: string; avatar_url?: string } }
 interface HistoriesResponse { success: boolean; data: { items: HistoryItem[]; pagination: HistoryPagination }; message?: string; }
 
 const formatRelative = (iso: string) => {
@@ -44,6 +45,8 @@ export default function HistoryScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [previewUri, setPreviewUri] = useState<string | null>(null);
   const [pdfGenerating, setPdfGenerating] = useState<Record<string, boolean>>({});
+  const [reportFeedbacks, setReportFeedbacks] = useState<Record<string, FeedbackItem[]>>({});
+  const [feedbackLoading, setFeedbackLoading] = useState<Record<string, boolean>>({});
 
   const generateReportHtml = (h: HistoryItem, expert?: any) => {
     const user = (h as any).user || { name: 'User', email: '' };
@@ -155,13 +158,35 @@ export default function HistoryScreen() {
     }
   };
 
+  const fetchReportFeedbacks = useCallback(async (reportId: string) => {
+    if (!reportId) return;
+    if (reportFeedbacks[reportId] || feedbackLoading[reportId]) return;
+    setFeedbackLoading((s) => ({ ...s, [reportId]: true }));
+    try {
+      const res = await httpClient.get<{ success: boolean; data: { items: FeedbackItem[] } }>(`/reports/${reportId}/feedbacks`);
+      const items = res?.data?.items || [];
+      setReportFeedbacks((s) => ({ ...s, [reportId]: items }));
+    } catch (e: any) {
+      // ignore silently - optional
+    } finally {
+      setFeedbackLoading((s) => ({ ...s, [reportId]: false }));
+    }
+  }, [reportFeedbacks, feedbackLoading]);
+
   const toggleExpand = useCallback((id: string) => {
     setExpanded((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      const willExpand = !next.has(id);
+      if (willExpand) next.add(id); else next.delete(id);
+      // after state update, if expanding fetch feedbacks for the report
+      if (willExpand) {
+        const found = items.find((it) => it.id === id) as any;
+        const reportId = found?.report?.id;
+        if (reportId) fetchReportFeedbacks(reportId);
+      }
       return next;
     });
-  }, []);
+  }, [items, fetchReportFeedbacks]);
 
   const fetchHistories = useCallback(async (nextPage: number, opts?: { replace?: boolean; isRefresh?: boolean }) => {
     if (!user?.id) return;
@@ -271,7 +296,30 @@ export default function HistoryScreen() {
             <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Disease Description</Text>
             <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{h.report?.disease?.description}</Text>
             <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800], marginTop: 12 }]}>Recommended Action</Text>
-            <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{solution}</Text>
+              <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{solution}</Text>
+              {/** Feedback section */}
+              <View style={{ marginTop: 12 }}>
+                <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Expert Feedback</Text>
+                {feedbackLoading[h.report.id] ? (
+                  <View style={{ marginTop: 8 }}>
+                    <ActivityIndicator color={colors.primary[600]} />
+                  </View>
+                ) : (
+                  <View style={{ marginTop: 8 }}>
+                    {(reportFeedbacks[h.report.id] && reportFeedbacks[h.report.id].length > 0) ? (
+                      reportFeedbacks[h.report.id].map((f) => (
+                        <View key={f.id} style={{ marginBottom: 12, padding: 10, backgroundColor: colors.neutral[50], borderRadius: 8 }}>
+                          <Text style={[commonStyles.textSm, { color: colors.neutral[800], fontWeight: '600' }]}>{f.expert?.name || 'Expert'}</Text>
+                          <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{f.feedback_text}</Text>
+                          <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 6 }]}>{f.varified_at ? `${new Date(f.varified_at).toLocaleString()}` : `Created: ${new Date(f.created_at).toLocaleString()}`}</Text>
+                        </View>
+                      ))
+                    ) : (
+                      <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 6 }]}>No feedback available for this report.</Text>
+                    )}
+                  </View>
+                )}
+              </View>
           </View>
         )}
       </Card>
