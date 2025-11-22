@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Modal, Pressable, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '../../components/ui/Card';
 import { httpClient } from '../../src/services/http.client';
@@ -10,7 +10,7 @@ import { TAB_BAR_HEIGHT, colors, commonStyles } from '../../styles';
 interface HistoryDisease { id: string; name: string; description: string; }
 interface HistorySolution { id: string; description: string; }
 interface HistoryCrop { id: string; image_url: string; disease_id: string; scanned_at: string; }
-interface HistoryReport { id: string; crop: HistoryCrop; disease: HistoryDisease; solution: HistorySolution; generated_at: string; }
+interface HistoryReport { id: string; crop: HistoryCrop; disease: HistoryDisease; solution: HistorySolution; generated_at: string; is_varified?: boolean; feedback_id?: string | null }
 interface HistoryItem { id: string; viewed_at: string; created_at: string; report: HistoryReport; }
 interface HistoryPagination { page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean; }
 interface HistoriesResponse { success: boolean; data: { items: HistoryItem[]; pagination: HistoryPagination }; message?: string; }
@@ -37,6 +37,7 @@ export default function HistoryScreen() {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
 
   const toggleExpand = useCallback((id: string) => {
     setExpanded((prev) => {
@@ -95,7 +96,9 @@ export default function HistoryScreen() {
     return (
       <Card key={h.id} variant="default" padding="small" style={commonStyles.mb4}> 
         <TouchableOpacity onPress={() => toggleExpand(h.id)} activeOpacity={0.85} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-          <Image source={{ uri: h.report?.crop?.image_url }} style={{ width: 82, height: 72, borderRadius: 12, backgroundColor: colors.neutral[200] }} />
+          <TouchableOpacity onPress={() => { if (h.report?.crop?.image_url) setPreviewUri(h.report.crop.image_url); }} activeOpacity={0.8}>
+            <Image source={{ uri: h.report?.crop?.image_url }} style={{ width: 82, height: 72, borderRadius: 12, backgroundColor: colors.neutral[200] }} />
+          </TouchableOpacity>
           <View style={[commonStyles.ml4, { flex: 1 }]}> 
             <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsStart]}> 
               <Text style={[commonStyles.textBase, commonStyles.fontSemibold, { color: colors.neutral[900], flexShrink: 1 }]} numberOfLines={1}>{diseaseName.replace(/_/g, ' ')}</Text>
@@ -103,11 +106,22 @@ export default function HistoryScreen() {
             </View>
             <Text style={[commonStyles.textSm, { color: colors.neutral[600], marginTop: 4 }]} numberOfLines={expandedState ? undefined : 2}>{solution}</Text>
             <View style={[commonStyles.flexRow, commonStyles.mt3, { gap: 8 }]}> 
-              <View style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.primary[50], borderRadius: 999, borderWidth: 1, borderColor: colors.primary[200] }}>
-                <Text style={[commonStyles.textXs, { color: colors.primary[700], fontWeight: '600' }]}>Report</Text>
+              <View style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.primary[50], borderRadius: 999, borderWidth: 1, borderColor: colors.primary[200], display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4}}>
+                <Ionicons name="download-outline" size={14} color={colors.success[600]} />
+                <Text style={[commonStyles.textXs, { color: colors.primary[700], fontWeight: '600' }]}>Download</Text>
               </View>
-              <View style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.secondary[50], borderRadius: 999, borderWidth: 1, borderColor: colors.secondary[200] }}>
-                <Text style={[commonStyles.textXs, { color: colors.secondary[700], fontWeight: '600' }]}>Solution</Text>
+              <View style={{ marginLeft: 'auto' }}>
+                {h.report?.is_varified ? (
+                  <View style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.success[50], borderRadius: 999, borderWidth: 1, borderColor: colors.success[200], flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="checkmark-circle" size={14} color={colors.success[600]} />
+                    <Text style={[commonStyles.textXs, { color: colors.success[700], fontWeight: '600', marginLeft: 6 }]}>Verified</Text>
+                  </View>
+                ) : (
+                  <View style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.danger[50], borderRadius: 999, borderWidth: 1, borderColor: colors.danger[200], flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="close-circle" size={14} color={colors.danger[600]} />
+                    <Text style={[commonStyles.textXs, { color: colors.danger[700], fontWeight: '600', marginLeft: 6 }]}>Unverified</Text>
+                  </View>
+                )}
               </View>
             </View>
             <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 6 }]}>Generated: {new Date(h.report?.generated_at).toLocaleString()}</Text>
@@ -194,6 +208,44 @@ export default function HistoryScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary[600]]} />}
         showsVerticalScrollIndicator={false}
       />
+      <Modal visible={!!previewUri} transparent animationType="fade" onRequestClose={() => setPreviewUri(null)}>
+        <Pressable style={styles.modalContainer} onPress={() => setPreviewUri(null)}>
+          <Image source={{ uri: previewUri || undefined }} style={styles.previewImage} resizeMode="contain" />
+          <TouchableOpacity style={styles.closeBtn} onPress={() => setPreviewUri(null)}>
+            <Text style={styles.closeText}>Close</Text>
+          </TouchableOpacity>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 0,
+    height: '100%',
+    width: '100%', 
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 0,
+  },
+  closeBtn: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  closeText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+});

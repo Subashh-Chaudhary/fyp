@@ -271,12 +271,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.95)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
+    padding: 0,
   },
   previewImage: {
     width: '100%',
-    height: '80%',
-    borderRadius: 8,
+    height: '100%',
+    borderRadius: 0,
   },
   closeBtn: {
     position: 'absolute',
