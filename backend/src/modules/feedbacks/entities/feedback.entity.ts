@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Reports } from '../reports/entities/report.entity';
-import { Experts } from '../expert/entities/expert.entity';
+import { Reports } from '../../reports/entities/report.entity';
+import { Experts } from '../../expert/entities/expert.entity';
 
 @Entity('feedbacks')
 @Index(['report'])

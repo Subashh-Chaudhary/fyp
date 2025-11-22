@@ -19,6 +19,9 @@ export class FeedbacksService {
     feedback_text: string;
     varified_at?: Date | null;
   }): Promise<Feedbacks> {
+    if (!params.feedback_text || params.feedback_text.toString().trim() === '') {
+      throw new BadRequestException('feedback_text is required');
+    }
     const report = await this.reportsRepo.findOne({ where: { id: params.report_id } });
     if (!report) throw new NotFoundException('Report not found');
 
