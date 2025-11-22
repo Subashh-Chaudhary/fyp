@@ -126,8 +126,24 @@ export default function HistoryScreen() {
             </View>
             <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 6 }]}>Generated: {new Date(h.report?.generated_at).toLocaleString()}</Text>
             <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 2 }]}>Scanned: {new Date(h.report?.crop?.scanned_at).toLocaleString()}</Text>
-            <TouchableOpacity onPress={() => toggleExpand(h.id)} style={{ marginTop: 8, alignSelf: 'flex-start' }}>
-              <Text style={[commonStyles.textXs, commonStyles.fontSemibold, { color: colors.primary[600] }]}>{expandedState ? 'Show less' : 'Show more'}</Text>
+            <TouchableOpacity
+              onPress={() => toggleExpand(h.id)}
+              activeOpacity={0.85}
+              style={{
+                marginTop: 8,
+                alignSelf: 'flex-end',
+                paddingVertical: 3,
+                paddingHorizontal: 6,
+                borderRadius: 12,
+                backgroundColor: colors.secondary[50],
+                borderWidth: 1,
+                borderColor: colors.secondary[200],
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <Ionicons name={expandedState ? 'chevron-up' : 'chevron-down'} size={14} color={colors.secondary[600]} style={{ marginRight: 4 }} />
+              <Text style={[commonStyles.textXs, commonStyles.fontSemibold, { color: colors.secondary[600] }]}>{expandedState ? 'Show less' : 'Show more'}</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
