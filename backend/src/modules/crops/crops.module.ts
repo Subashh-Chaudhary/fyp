@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CloudinaryService } from '../../common/services/cloudinary.service';
 import { MlClientService } from '../../common/services/ml-client.service';
 import { Users } from '../users/entities/users.entity';
+import { Experts } from '../expert/entities/expert.entity';
 import { DiseasesModule } from '../diseases/diseases.module';
 import { SolutionsModule } from '../solutions/solutions.module';
 import { CropsController } from './crops.controller';
@@ -14,7 +15,7 @@ import { HistoriesModule } from '../histories/histories.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Crops, Users]),
+    TypeOrmModule.forFeature([Crops, Users, Experts]),
     DiseasesModule,
     SolutionsModule,
     ReportsModule,

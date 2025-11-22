@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Users } from '../users/entities/users.entity';
+import { Experts } from '../expert/entities/expert.entity';
 import { CreateCropDto, UpdateCropDto } from './dtos';
 import { Crops } from './entities/crop.entity';
 import { CloudinaryService } from '../../common/services/cloudinary.service';
@@ -17,22 +18,34 @@ export class CropsService {
     private readonly cropsRepository: Repository<Crops>,
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
+    @InjectRepository(Experts)
+    private readonly expertsRepository: Repository<Experts>,
     private readonly cloudinary: CloudinaryService,
   ) {}
 
-  async ensureUser(user_id: string): Promise<Users> {
+  /**
+   * Ensure the provided id belongs to a Users record. If it belongs to an Experts
+   * record, return null (we don't attach expert ids to the crops.user foreign key).
+   * If it exists in neither table, throw NotFoundException.
+   */
+  async ensureUser(user_id: string): Promise<Users | null> {
     const user = await this.usersRepository.findOne({ where: { id: user_id } });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
+    if (user) return user;
+
+    // If not found in Users, check Experts. If expert exists, return null
+    // — caller will treat this as "uploader is an expert" and avoid setting
+    // the `user` relation on Crops (to prevent FK violations).
+    const expert = await this.expertsRepository.findOne({ where: { id: user_id } });
+    if (expert) return null;
+
+    throw new NotFoundException('User not found');
   }
 
   async create(
     dto: CreateCropDto,
     opts?: { file?: any; diseaseId?: string },
   ): Promise<Crops> {
-    let user: Users | undefined;
+    let user: Users | null | undefined;
     if (dto.user_id) {
       user = await this.ensureUser(dto.user_id);
     }

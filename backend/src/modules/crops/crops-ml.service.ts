@@ -1,5 +1,9 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { CropsService } from './crops.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Users } from '../users/entities/users.entity';
+import { Experts } from '../expert/entities/expert.entity';
 import { DiseasesService } from '../diseases/diseases.service';
 import { SolutionsService } from '../solutions/solutions.service';
 import {
@@ -20,6 +24,10 @@ export class CropsMlService {
     private readonly mlClient: MlClientService,
     private readonly reportsService: ReportsService,
     private readonly historiesService: HistoriesService,
+    @InjectRepository(Users)
+    private readonly usersRepository: Repository<Users>,
+    @InjectRepository(Experts)
+    private readonly expertsRepository: Repository<Experts>,
   ) {}
 
   async predictAndCreateCrop(dto: CreateCropDto, file: Express.Multer.File) {
@@ -81,9 +89,28 @@ export class CropsMlService {
       }
     }
 
+    // Determine if provided user_id belongs to a Users record. If it's an
+    // Experts id, we won't attach it to reports or create a history entry
+    // (those tables reference Users only).
+    let attachUserId: string | null = null;
+    if (dto.user_id) {
+      const foundUser = await this.usersRepository.findOne({ where: { id: dto.user_id } });
+      if (foundUser) {
+        attachUserId = dto.user_id;
+      } else {
+        // if it's not a user but exists in experts, we intentionally leave
+        // attachUserId as null so reports.user stays null and history is skipped.
+        const foundExpert = await this.expertsRepository.findOne({ where: { id: dto.user_id } });
+        if (!foundExpert) {
+          // neither user nor expert -> treat as invalid id
+          throw new BadRequestException('User not found');
+        }
+      }
+    }
+
     // Create a report for this scan
     const report = await this.reportsService.createReport({
-      user_id: dto.user_id ?? null,
+      user_id: attachUserId,
       crop,
       disease,
       solution: solution ?? null,
@@ -93,10 +120,10 @@ export class CropsMlService {
 
     // Auto-record a history entry for the uploader if user_id is present
     let history: any = null;
-    if (dto.user_id) {
+    if (attachUserId) {
       try {
         history = await this.historiesService.recordView({
-          user_id: dto.user_id,
+          user_id: attachUserId,
           report_id: report.id,
           viewed_at: new Date(),
         });
