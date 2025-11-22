@@ -1,12 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { View } from 'react-native';
+import { useAuthStore } from '../../src/store/auth.store';
 
 /**
  * Tab navigation layout
  * Defines the 5 main tabs: Home, Feed, Scan, History, Settings
  */
 export default function TabLayout() {
+  const user = useAuthStore((s) => s.user);
+  const userType = (user?.userType ?? (user as any)?.user_type ?? '').toLowerCase();
+
+  const isExpertOrAdmin = userType === 'expert' || userType === 'admin';
+  const isFarmer = userType === 'farmer';
+
   return (
     <Tabs
       screenOptions={{
@@ -44,7 +51,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons name="home" size={focused ? 26 : 24} color={color} />
           ),
         }}
@@ -54,7 +61,7 @@ export default function TabLayout() {
         name="feed"
         options={{
           title: 'Feed',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons name="newspaper" size={focused ? 26 : 24} color={color} />
           ),
         }}
@@ -64,7 +71,7 @@ export default function TabLayout() {
         name="scan"
         options={{
           title: '',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <View style={{
               backgroundColor: focused ? '#22c55e' : '#f0fdf4',
               width: 70,
@@ -89,21 +96,39 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="history"
-        options={{
-          title: 'History',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name="time" size={focused ? 26 : 24} color={color} />
-          ),
-        }}
-      />
+      <Tabs>
+        {isExpertOrAdmin && (
+          <Tabs.Screen
+            name="detections"
+            options={{
+              title: 'Detections',
+              href: null, // prevents auto route exposure
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons name="images" size={focused ? 26 : 24} color={color} />
+              ),
+            }}
+          />
+        )}
+
+        {isFarmer && (
+          <Tabs.Screen
+            name="history"
+            options={{
+              title: 'History',
+              href: null, // prevents auto route exposure
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons name="time" size={focused ? 26 : 24} color={color} />
+              ),
+            }}
+          />
+        )}
+      </Tabs>
 
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons name="settings" size={focused ? 26 : 24} color={color} />
           ),
         }}

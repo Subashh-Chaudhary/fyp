@@ -6,10 +6,14 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   Res,
+  Put,
+  Body,
+  HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ReportsService } from './reports.service';
 import { ResponseHelper } from '../../common/helpers/response.helper';
+import { UpdateReportDto } from './dtos/update-report.dto';
 
 @Controller('')
 export class ReportsController {
@@ -50,6 +54,19 @@ export class ReportsController {
       200,
       `/reports/${id}`,
       'GET',
+    );
+    return res.status(response.statusCode).json(response);
+  }
+
+  @Put('reports/:id')
+  async update(@Param('id') id: string, @Body() body: UpdateReportDto, @Res() res: Response) {
+    const updated = await this.reportsService.update(id, body);
+    const response = ResponseHelper.success(
+      updated,
+      'Report updated successfully',
+      HttpStatus.OK,
+      `/reports/${id}`,
+      'PUT',
     );
     return res.status(response.statusCode).json(response);
   }

@@ -5,7 +5,7 @@ export class CreateCropsTable1700000000003 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "crops" (
+      CREATE TABLE IF NOT EXISTS "crops" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
         "user_id" uuid NOT NULL,
         "image_url" character varying(512) NOT NULL,
@@ -20,10 +20,10 @@ export class CreateCropsTable1700000000003 implements MigrationInterface {
     `);
 
     await queryRunner.query(
-      `CREATE INDEX "IDX_crops_user_id" ON "crops" ("user_id")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_crops_user_id" ON "crops" ("user_id")`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_crops_disease_id" ON "crops" ("disease_id")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_crops_disease_id" ON "crops" ("disease_id")`,
     );
   }
 

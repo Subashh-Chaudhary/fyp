@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reports } from './entities/report.entity';
@@ -36,6 +36,25 @@ export class ReportsService {
       generated_at: new Date(),
     });
     return this.repo.save(entity);
+  }
+
+  async update(id: string, updateData: any): Promise<Reports> {
+    if (!updateData || Object.keys(updateData).length === 0) {
+      throw new BadRequestException('No data provided for update');
+    }
+    const report = await this.findById(id);
+    const filtered: any = Object.fromEntries(
+      Object.entries(updateData).filter(([, v]) => v !== undefined),
+    );
+
+    // map solution_id to relation object if provided
+    if ('solution_id' in filtered) {
+      filtered.solution = filtered.solution_id === null ? null : { id: filtered.solution_id };
+      delete filtered.solution_id;
+    }
+
+    await this.repo.update(id, filtered as any);
+    return this.findById(id);
   }
 
   async findAll(
