@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, Platform, RefreshControl, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Image, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -48,6 +48,7 @@ export default function DetectionsScreen() {
   const [feedbacks, setFeedbacks] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
   const [verifySubmitting, setVerifySubmitting] = useState<Record<string, boolean>>({});
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
 
   const fetchReports = useCallback(async (nextPage: number, opts?: { replace?: boolean; isRefresh?: boolean }) => {
     const isRefresh = !!opts?.isRefresh;
@@ -91,7 +92,9 @@ export default function DetectionsScreen() {
     return (
       <Card key={r.id} variant="default" padding="small" style={commonStyles.mb4}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-          <Image source={{ uri: r.crop?.image_url }} style={{ width: 82, height: 72, borderRadius: 12, backgroundColor: colors.neutral[200] }} />
+          <TouchableOpacity onPress={() => { if (r.crop?.image_url) setPreviewUri(r.crop.image_url); }} activeOpacity={0.8}>
+            <Image source={{ uri: r.crop?.image_url }} style={{ width: 82, height: 72, borderRadius: 12, backgroundColor: colors.neutral[200] }} />
+          </TouchableOpacity>
           <View style={[commonStyles.ml4, { flex: 1 }]}> 
             <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsStart]}> 
               <Text style={[commonStyles.textBase, commonStyles.fontSemibold, { color: colors.neutral[900], flexShrink: 1 }]} numberOfLines={1}>{(r.disease?.name ?? 'Unknown').replace(/_/g, ' ')}</Text>
@@ -250,6 +253,42 @@ export default function DetectionsScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary[600]]} />}
         showsVerticalScrollIndicator={false}
       />
+      <Modal visible={!!previewUri} transparent animationType="fade" onRequestClose={() => setPreviewUri(null)}>
+        <Pressable style={styles.modalContainer} onPress={() => setPreviewUri(null)}>
+          <Image source={{ uri: previewUri || undefined }} style={styles.previewImage} resizeMode="contain" />
+          <TouchableOpacity style={styles.closeBtn} onPress={() => setPreviewUri(null)}>
+            <Text style={styles.closeText}>Close</Text>
+          </TouchableOpacity>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+  },
+  previewImage: {
+    width: '100%',
+    height: '80%',
+    borderRadius: 8,
+  },
+  closeBtn: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  closeText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+});
