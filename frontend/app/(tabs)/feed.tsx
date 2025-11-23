@@ -26,9 +26,7 @@ export default function FeedScreen() {
   const isAdmin = userType === 'admin';
 
   // If admin, show admin feed management
-  if (isAdmin) {
-    return <AdminFeedManagement />;
-  }
+
 
   // Otherwise show regular feed for farmers/experts
   const [loading, setLoading] = useState(false);
@@ -81,8 +79,10 @@ export default function FeedScreen() {
   }, []);
 
   useEffect(() => {
-    fetchNews({ silent: true });
-  }, [fetchNews]);
+    if (!isAdmin) {
+      fetchNews({ silent: true });
+    }
+  }, [fetchNews, isAdmin]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -98,6 +98,10 @@ export default function FeedScreen() {
       // ignore
     }
   };
+
+  if (isAdmin) {
+    return <AdminFeedManagement />;
+  }
 
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.bgNeutral50]}>
