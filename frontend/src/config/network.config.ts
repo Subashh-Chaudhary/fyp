@@ -12,8 +12,8 @@ export const NETWORK_CONFIG = {
   // Development URLs for different platforms
   DEVELOPMENT_URLS: {
     // For physical devices using Expo Go
-    PHYSICAL_DEVICE: 'http://192.168.18.78:3000',
-
+    // PHYSICAL_DEVICE: 'http://192.168.18.78:3000',
+    PHYSICAL_DEVICE: "http://10.35.37.206:3000",
     // For Android emulator
     ANDROID_EMULATOR: 'http://10.0.2.2:3000',
 
