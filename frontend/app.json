@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#4ade80"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",
@@ -49,6 +50,16 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "updates": {
+      "url": "http://192.168.18.78:8081",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
+    "extra": {
+      "eas": {
+        "projectId": "crop-disease-detection-system"
+      }
     }
   }
 }

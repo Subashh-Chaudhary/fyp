@@ -14,6 +14,12 @@ export default function TabLayout() {
   const isExpertOrAdmin = userType === 'expert' || userType === 'admin';
   const isFarmer = userType === 'farmer';
 
+  // Debug logging
+  console.log('TabLayout - User:', user);
+  console.log('TabLayout - UserType:', userType);
+  console.log('TabLayout - isExpertOrAdmin:', isExpertOrAdmin);
+  console.log('TabLayout - isFarmer:', isFarmer);
+
   return (
     <Tabs
       screenOptions={{
@@ -96,33 +102,27 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs>
-        {isExpertOrAdmin && (
-          <Tabs.Screen
-            name="detections"
-            options={{
-              title: 'Detections',
-              href: null, // prevents auto route exposure
-              tabBarIcon: ({ color, focused }) => (
-                <Ionicons name="images" size={focused ? 26 : 24} color={color} />
-              ),
-            }}
-          />
-        )}
+      <Tabs.Screen
+        name="detections"
+        options={{
+          title: 'Detections',
+          ...(isExpertOrAdmin ? {} : { href: null }),
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name="images" size={focused ? 26 : 24} color={color} />
+          ),
+        }}
+      />
 
-        {isFarmer && (
-          <Tabs.Screen
-            name="history"
-            options={{
-              title: 'History',
-              href: null, // prevents auto route exposure
-              tabBarIcon: ({ color, focused }) => (
-                <Ionicons name="time" size={focused ? 26 : 24} color={color} />
-              ),
-            }}
-          />
-        )}
-      </Tabs>
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: 'History',
+          ...(isFarmer ? {} : { href: null }),
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name="time" size={focused ? 26 : 24} color={color} />
+          ),
+        }}
+      />
 
       <Tabs.Screen
         name="settings"
