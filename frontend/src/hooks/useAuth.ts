@@ -59,16 +59,11 @@ export const useAuth = () => {
 
   const logoutMutation = useLogout({
     onSuccess: () => {
-      logoutUser();
-      httpClient.clearAuthToken();
-      router.replace('/welcome');
+      console.log('Logout API call successful');
     },
     onError: (error) => {
-      console.error('Logout error:', error);
-      // Still logout locally even if API fails
-      logoutUser();
-      httpClient.clearAuthToken();
-      router.replace('/welcome');
+      console.error('Logout API call failed:', error);
+      // Local logout already happened, so just log the error
     },
   });
 
@@ -143,8 +138,16 @@ export const useAuth = () => {
 
   // Logout function
   const logout = useCallback(async () => {
-    return logoutMutation.mutateAsync();
-  }, [logoutMutation]);
+    // Immediately clear local auth state and navigate
+    // This prevents the auth middleware from interfering
+    await logoutUser();
+    httpClient.clearAuthToken();
+    router.replace('/login');
+
+    // Call the logout API in the background (fire and forget)
+    // This ensures the backend session is cleared
+    logoutMutation.mutate();
+  }, [logoutUser, router, logoutMutation]);
 
   // Check if user is authenticated
   const isAuthenticated = useCallback(() => {
@@ -164,7 +167,7 @@ export const useAuth = () => {
 
   // Helper function to extract user-friendly error message
   const getErrorMessage = useCallback((mutation: { error: unknown }) => {
-    if (!mutation.error) {return null;}
+    if (!mutation.error) { return null; }
 
     // Try to get the most user-friendly error message
     if (mutation.error instanceof Error) {
