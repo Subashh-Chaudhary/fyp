@@ -4,8 +4,10 @@ import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import AdminUserManagement from '../../components/admin/AdminUserManagement';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { useAuthStore } from '../../src/store/auth.store';
 import { TAB_BAR_HEIGHT, colors, commonStyles } from '../../styles';
 
 /**
@@ -13,13 +15,21 @@ import { TAB_BAR_HEIGHT, colors, commonStyles } from '../../styles';
  * Allows users to take photos and scan for diseases
  */
 export default function ScanScreen() {
+  const user = useAuthStore((s) => s.user);
+  const userType = (user?.userType ?? (user as any)?.user_type ?? '').toLowerCase();
+  const isAdmin = userType === 'admin';
+
+  if (isAdmin) {
+    return <AdminUserManagement />;
+  }
+
   const handleScanCrop = () => {
     // Navigate to scan camera in the stack navigator.
     // Use the group in the path to disambiguate from the tabs group.
     // router.push('/(stack)/scan/camera');
-     console.log('Navigating to camera...');
-  router.push('/(stack)/scan/camera'); // Try without the (stack) group
-  console.log('Navigation attempted');
+    console.log('Navigating to camera...');
+    router.push('/(stack)/scan/camera'); // Try without the (stack) group
+    console.log('Navigation attempted');
   };
 
   const handleChooseFromGallery = () => {

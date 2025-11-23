@@ -93,7 +93,7 @@ export default function TabLayout() {
               elevation: 4,
             }}>
               <Ionicons
-                name="camera"
+                name={userType === 'admin' ? "people" : "camera"}
                 size={focused ? 40 : 35}
                 color={focused ? '#ffffff' : '#22c55e'}
               />

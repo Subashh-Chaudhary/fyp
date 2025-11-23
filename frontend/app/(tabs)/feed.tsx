@@ -3,9 +3,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Linking, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import AdminFeedManagement from '../../components/admin/AdminFeedManagement';
 import { Card } from '../../components/ui/Card';
 import { getNews } from '../../lib/api';
 import { NewsItem } from '../../src/interfaces';
+import { useAuthStore } from '../../src/store/auth.store';
 import { colors, commonStyles } from '../../styles';
 
 // Small helper to show relative time (e.g. "2h" or "3m")
@@ -19,6 +21,16 @@ const timeAgo = (d?: Date | null) => {
 };
 
 export default function FeedScreen() {
+  const user = useAuthStore((s) => s.user);
+  const userType = (user?.userType ?? (user as any)?.user_type ?? '').toLowerCase();
+  const isAdmin = userType === 'admin';
+
+  // If admin, show admin feed management
+  if (isAdmin) {
+    return <AdminFeedManagement />;
+  }
+
+  // Otherwise show regular feed for farmers/experts
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -92,7 +104,7 @@ export default function FeedScreen() {
       <View style={[commonStyles.flex1, commonStyles.px6, commonStyles.py4]}>
         {/* Header with manual reload */}
         <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsCenter, commonStyles.mb6]}>
-          <View style={[commonStyles.itemsCenter]}> 
+          <View style={[commonStyles.itemsCenter]}>
             <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 72, height: 72, backgroundColor: colors.secondary[100], borderRadius: 36 }, commonStyles.mb3]}>
               <Ionicons name="newspaper" size={36} color={colors.secondary[500]} />
             </View>
@@ -148,7 +160,7 @@ export default function FeedScreen() {
             renderItem={({ item }) => {
               const dateStr = item.publish_date ?? item.created_at ?? undefined;
               const dt = dateStr ? new Date(dateStr) : null;
-              
+
               return (
                 <TouchableOpacity activeOpacity={0.85} onPress={() => openUrl(item.url)} style={{ marginBottom: 12 }}>
                   <Card variant="elevated" padding="medium" style={{ borderRadius: 12 }}>
