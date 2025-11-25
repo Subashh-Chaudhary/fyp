@@ -2,191 +2,229 @@
     "Apple___Apple_scab": {
         "disease": "Apple Scab",
         "description": "A common fungal disease that causes dark, scabby spots on leaves and fruit, reducing fruit quality.",
-        "recommended_action": "Remove fallen leaves, prune infected branches, and apply fungicides like Captan or Mancozeb early in the season."
+        "recommended_action": "Remove fallen leaves, prune infected branches, and apply fungicides like Captan or Mancozeb early in the season.",
+        "severity": "Moderate"
     },
     "Apple___Black_rot": {
         "disease": "Black Rot",
         "description": "A fungal disease that causes circular brown spots on leaves and black, shriveled fruit known as mummies.",
-        "recommended_action": "Prune and destroy infected limbs and fruit. Apply copper-based fungicide before bloom."
+        "recommended_action": "Prune and destroy infected limbs and fruit. Apply copper-based fungicide before bloom.",
+        "severity": "High"
     },
     "Apple___Cedar_apple_rust": {
         "disease": "Cedar Apple Rust",
-        "description": "Yellow-orange leaf spots and deformed fruits, caused by a fungus that cycles between apple and cedar trees.",
-        "recommended_action": "Remove nearby cedar hosts if possible and apply fungicides containing Myclobutanil at pink bud stage."
+        "description": "A fungal disease causing yellow-orange spots on apple leaves, requiring both apple and cedar trees to complete its lifecycle.",
+        "recommended_action": "Remove nearby cedar trees if possible. Apply protective fungicides during spring when spores are active.",
+        "severity": "Moderate"
     },
     "Apple___healthy": {
         "disease": "Healthy",
-        "description": "The apple tree appears normal with clean leaves and unblemished fruits.",
-        "recommended_action": "Continue regular pruning and watering. Monitor for early signs of disease."
+        "description": "No disease detected. The apple plant appears healthy with no visible symptoms.",
+        "recommended_action": "Continue regular monitoring and maintain good cultural practices including proper spacing, watering, and fertilization.",
+        "severity": "None"
     },
     "Blueberry___healthy": {
         "disease": "Healthy",
-        "description": "The blueberry plant shows green foliage and healthy fruit with no visible disease.",
-        "recommended_action": "Maintain soil acidity and avoid waterlogging to prevent root diseases."
+        "description": "No disease detected. The blueberry plant appears healthy.",
+        "recommended_action": "Continue regular care with proper watering, mulching, and annual pruning to maintain plant health.",
+        "severity": "None"
     },
     "Cherry_(including_sour)___Powdery_mildew": {
         "disease": "Powdery Mildew",
-        "description": "White, powdery coating forms on leaves, shoots, and fruit, slowing growth and reducing yield.",
-        "recommended_action": "Prune overcrowded branches, improve airflow, and apply sulfur-based fungicides."
+        "description": "A fungal disease creating white powdery coating on leaves, shoots, and fruit, reducing photosynthesis.",
+        "recommended_action": "Improve air circulation by pruning. Apply sulfur-based or potassium bicarbonate fungicides at first sign of infection.",
+        "severity": "Moderate"
     },
     "Cherry_(including_sour)___healthy": {
         "disease": "Healthy",
-        "description": "Cherry plant shows shiny green leaves and clean fruit without mold or spots.",
-        "recommended_action": "Maintain good pruning and watering practices to avoid fungal diseases."
+        "description": "No disease detected. The cherry plant appears healthy.",
+        "recommended_action": "Maintain good sanitation, proper watering, and monitor regularly for early detection of any issues.",
+        "severity": "None"
     },
     "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
         "disease": "Gray Leaf Spot",
-        "description": "Gray to tan rectangular lesions appear on leaves, reducing photosynthesis and yield.",
-        "recommended_action": "Plant resistant hybrids, rotate crops, and apply fungicide like Azoxystrobin if disease spreads."
+        "description": "A fungal disease causing rectangular gray to brown lesions on corn leaves, reducing yield.",
+        "recommended_action": "Use resistant hybrids, practice crop rotation, and apply azoxystrobin or pyraclostrobin fungicides if severe.",
+        "severity": "Moderate"
     },
     "Corn_(maize)___Common_rust_": {
         "disease": "Common Rust",
-        "description": "Reddish-brown pustules appear on leaves, caused by the Puccinia sorghi fungus.",
-        "recommended_action": "Use resistant corn hybrids and spray fungicides such as Trifloxystrobin when rust is severe."
+        "description": "A fungal disease producing orange-brown pustules on corn leaves, most common in cool, humid conditions.",
+        "recommended_action": "Plant resistant varieties. Apply triazole or strobilurin fungicides if infection is severe during critical growth stages.",
+        "severity": "Low to Moderate"
     },
     "Corn_(maize)___Northern_Leaf_Blight": {
         "disease": "Northern Leaf Blight",
-        "description": "Large, grayish-brown lesions appear on leaves, reducing the plant\u2019s ability to produce energy.",
-        "recommended_action": "Rotate crops, plant resistant varieties, and use fungicides at tasseling if conditions are favorable."
+        "description": "A fungal disease causing long, cigar-shaped gray-green lesions on corn leaves, significantly reducing yield.",
+        "recommended_action": "Use resistant hybrids, rotate crops, and apply propiconazole or azoxystrobin fungicides preventatively.",
+        "severity": "High"
     },
     "Corn_(maize)___healthy": {
         "disease": "Healthy",
-        "description": "The corn plant is free of rusts and leaf blights, showing strong and even leaf coloration.",
-        "recommended_action": "Maintain good field hygiene and balanced fertilization to prevent disease outbreaks."
+        "description": "No disease detected. The corn plant appears healthy.",
+        "recommended_action": "Continue proper spacing, adequate fertilization, and monitor for pests and diseases throughout growing season.",
+        "severity": "None"
     },
     "Grape___Black_rot": {
         "disease": "Black Rot",
-        "description": "Fungal disease causing brown leaf spots and black shriveled fruit, especially in humid conditions.",
-        "recommended_action": "Remove infected debris and apply fungicides such as Mancozeb or Captan before bloom."
+        "description": "A serious fungal disease causing circular brown leaf spots and shriveled black berries.",
+        "recommended_action": "Remove mummified fruit and infected canes. Apply mancozeb or myclobutanil from bud break through fruit set.",
+        "severity": "High"
     },
     "Grape___Esca_(Black_Measles)": {
         "disease": "Esca (Black Measles)",
-        "description": "Causes leaf striping, fruit spots, and internal wood decay, leading to vine dieback.",
-        "recommended_action": "Prune infected wood, avoid injuries during pruning, and maintain proper irrigation to reduce stress."
+        "description": "A complex fungal disease causing tiger-stripe leaf patterns and wood decay in older vines.",
+        "recommended_action": "Prune out infected wood during dormant season. No chemical cure exists; focus on prevention and vine health.",
+        "severity": "High"
     },
     "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": {
-        "disease": "Leaf Blight (Isariopsis Leaf Spot)",
-        "description": "Small angular spots on leaves that coalesce and cause leaf drop, reducing yield.",
-        "recommended_action": "Remove fallen leaves, improve air circulation, and apply fungicides containing copper or sulfur."
+        "disease": "Isariopsis Leaf Spot",
+        "description": "A fungal disease causing angular brown spots on grape leaves, leading to premature defoliation.",
+        "recommended_action": "Improve air circulation through canopy management. Apply copper-based fungicides or mancozeb.",
+        "severity": "Moderate"
     },
     "Grape___healthy": {
         "disease": "Healthy",
-        "description": "The grapevine shows lush green leaves and firm, disease-free grapes.",
-        "recommended_action": "Ensure proper pruning, spacing, and watering to keep vines strong and disease-free."
+        "description": "No disease detected. The grape plant appears healthy.",
+        "recommended_action": "Maintain proper pruning, training, and spray programs to prevent diseases. Monitor regularly.",
+        "severity": "None"
     },
     "Orange___Haunglongbing_(Citrus_greening)": {
-        "disease": "Citrus Greening (HLB)",
-        "description": "A serious bacterial infection that causes yellow shoots, misshapen fruit, and tree death.",
-        "recommended_action": "Remove infected trees to prevent spread and control psyllid vectors using approved insecticides."
+        "disease": "Huanglongbing (Citrus Greening)",
+        "description": "A devastating bacterial disease transmitted by psyllids, causing yellow shoots, misshapen fruit, and eventual tree death.",
+        "recommended_action": "Remove infected trees immediately. Control psyllid vectors with insecticides. Use certified disease-free nursery stock.",
+        "severity": "Critical"
     },
     "Peach___Bacterial_spot": {
         "disease": "Bacterial Spot",
-        "description": "Dark, sunken spots appear on leaves and fruit, leading to premature leaf drop and blemished peaches.",
-        "recommended_action": "Plant resistant cultivars, prune infected twigs, and apply copper-based bactericides."
+        "description": "A bacterial disease causing small dark spots on leaves and fruit, leading to defoliation and unmarketable fruit.",
+        "recommended_action": "Apply copper sprays during dormancy and oxytetracycline during growing season. Plant resistant varieties.",
+        "severity": "High"
     },
     "Peach___healthy": {
         "disease": "Healthy",
-        "description": "The peach tree shows smooth leaves and clean fruits with no visible spots.",
-        "recommended_action": "Prune regularly to maintain airflow and prevent bacterial buildup."
+        "description": "No disease detected. The peach plant appears healthy.",
+        "recommended_action": "Continue regular monitoring, proper pruning for air circulation, and preventive spray programs.",
+        "severity": "None"
     },
     "Pepper,_bell___Bacterial_spot": {
         "disease": "Bacterial Spot",
-        "description": "Small, water-soaked lesions appear on leaves and fruit, turning brown and scabby over time.",
-        "recommended_action": "Use disease-free seeds, avoid overhead watering, and spray copper-based fungicides."
+        "description": "A bacterial disease causing dark, greasy spots on leaves and fruit, reducing yield and quality.",
+        "recommended_action": "Use disease-free seeds, practice crop rotation, and apply copper-based bactericides weekly.",
+        "severity": "Moderate to High"
     },
     "Pepper,_bell___healthy": {
         "disease": "Healthy",
-        "description": "Bell pepper plants have firm green leaves and shiny fruit without blemishes.",
-        "recommended_action": "Keep plants well-spaced and watered to prevent stress-related infections."
+        "description": "No disease detected. The bell pepper plant appears healthy.",
+        "recommended_action": "Maintain consistent watering, proper spacing for air flow, and monitor for early signs of disease or pests.",
+        "severity": "None"
     },
     "Potato___Early_blight": {
         "disease": "Early Blight",
-        "description": "Dark, circular spots with concentric rings appear on lower leaves, leading to leaf drop.",
-        "recommended_action": "Remove affected leaves and apply fungicides like Mancozeb or Chlorothalonil."
+        "description": "A fungal disease causing target-like brown spots on lower leaves, progressing upward and reducing yield.",
+        "recommended_action": "Remove infected foliage, apply chlorothalonil or mancozeb fungicides, and practice 3-year crop rotation.",
+        "severity": "Moderate"
     },
     "Potato___Late_blight": {
         "disease": "Late Blight",
-        "description": "Causes brown patches and water-soaked lesions on leaves and stems, leading to rapid decay.",
-        "recommended_action": "Destroy infected plants, avoid overhead watering, and spray fungicides like Metalaxyl."
+        "description": "A devastating disease causing water-soaked lesions on leaves and stems, can destroy entire crops rapidly.",
+        "recommended_action": "Apply preventive fungicides (chlorothalonil, mancozeb). Destroy infected plants immediately. Use resistant varieties.",
+        "severity": "Critical"
     },
     "Potato___healthy": {
         "disease": "Healthy",
-        "description": "The potato plant has dark green foliage and firm tubers with no visible blight.",
-        "recommended_action": "Use certified seeds and rotate crops to reduce soil-borne pathogens."
+        "description": "No disease detected. The potato plant appears healthy.",
+        "recommended_action": "Use certified disease-free seed potatoes, practice crop rotation, and monitor fields regularly.",
+        "severity": "None"
     },
     "Raspberry___healthy": {
         "disease": "Healthy",
-        "description": "The raspberry bush is vigorous and shows no signs of leaf spot or canker.",
-        "recommended_action": "Maintain good pruning and watering habits to prevent fungal growth."
+        "description": "No disease detected. The raspberry plant appears healthy.",
+        "recommended_action": "Maintain proper pruning of old canes, ensure good air circulation, and monitor for diseases.",
+        "severity": "None"
     },
     "Soybean___healthy": {
         "disease": "Healthy",
-        "description": "Soybean plants appear uniform and green with no signs of leaf blight or rust.",
-        "recommended_action": "Ensure crop rotation and good drainage to prevent soil-borne diseases."
+        "description": "No disease detected. The soybean plant appears healthy.",
+        "recommended_action": "Continue proper crop rotation, monitor for insects and diseases, and maintain optimal soil fertility.",
+        "severity": "None"
     },
     "Squash___Powdery_mildew": {
         "disease": "Powdery Mildew",
-        "description": "White, powdery spots appear on leaves, leading to yellowing and curling.",
-        "recommended_action": "Provide good air circulation, avoid excess nitrogen, and spray sulfur or neem oil-based fungicides."
+        "description": "A fungal disease creating white powdery coating on leaves, reducing photosynthesis and fruit quality.",
+        "recommended_action": "Apply sulfur or potassium bicarbonate fungicides. Improve air circulation and avoid overhead watering.",
+        "severity": "Moderate"
     },
     "Strawberry___Leaf_scorch": {
         "disease": "Leaf Scorch",
-        "description": "Small purple spots merge into brown patches, drying leaf edges and reducing yield.",
-        "recommended_action": "Remove old leaves, avoid overhead irrigation, and apply copper-based sprays if needed."
+        "description": "A fungal disease causing purple-bordered spots that merge, giving leaves a scorched appearance.",
+        "recommended_action": "Remove and destroy infected leaves. Apply captan or myclobutanil fungicides. Ensure good air circulation.",
+        "severity": "Moderate"
     },
     "Strawberry___healthy": {
         "disease": "Healthy",
-        "description": "Strawberry plants have bright green leaves and firm red fruits without any discoloration.",
-        "recommended_action": "Water regularly and mulch around the base to retain moisture and prevent fungal spores."
+        "description": "No disease detected. The strawberry plant appears healthy.",
+        "recommended_action": "Remove old leaves after fruiting, maintain proper spacing, and use disease-free planting material.",
+        "severity": "None"
     },
     "Tomato___Bacterial_spot": {
         "disease": "Bacterial Spot",
-        "description": "Small water-soaked spots appear on leaves and fruit, later turning brown and scabby.",
-        "recommended_action": "Avoid overhead watering and apply copper-based bactericides. Remove infected plants if severe."
+        "description": "A bacterial disease causing small dark spots with yellow halos on leaves and fruit.",
+        "recommended_action": "Use disease-resistant varieties, apply copper-based bactericides, and avoid overhead irrigation.",
+        "severity": "Moderate to High"
     },
     "Tomato___Early_blight": {
         "disease": "Early Blight",
-        "description": "Dark brown spots with concentric rings appear on lower leaves, causing premature defoliation.",
-        "recommended_action": "Use crop rotation, remove old plant debris, and spray fungicides like Chlorothalonil."
+        "description": "A fungal disease causing concentric ring spots on lower leaves, progressing upward.",
+        "recommended_action": "Remove affected leaves, apply chlorothalonil or mancozeb, mulch to prevent soil splash, and stake plants.",
+        "severity": "Moderate"
     },
     "Tomato___Late_blight": {
         "disease": "Late Blight",
-        "description": "Irregular gray-green patches appear on leaves that quickly turn brown and rot.",
-        "recommended_action": "Destroy affected plants, avoid water on leaves, and use Metalaxyl-based fungicides."
+        "description": "A serious fungal disease causing large brown blotches on leaves and fruit, can destroy crops quickly.",
+        "recommended_action": "Apply preventive fungicides (chlorothalonil, mancozeb). Remove infected plants immediately. Improve air circulation.",
+        "severity": "Critical"
     },
     "Tomato___Leaf_Mold": {
         "disease": "Leaf Mold",
-        "description": "Yellow patches appear on upper leaf surfaces, with gray mold on the underside.",
-        "recommended_action": "Increase air circulation, reduce humidity, and spray fungicides like Chlorothalonil."
+        "description": "A fungal disease causing yellow spots on upper leaf surfaces and fuzzy growth underneath, common in humid conditions.",
+        "recommended_action": "Improve greenhouse ventilation, reduce humidity, apply chlorothalonil fungicide, and use resistant varieties.",
+        "severity": "Moderate"
     },
     "Tomato___Septoria_leaf_spot": {
         "disease": "Septoria Leaf Spot",
-        "description": "Small, circular gray spots with dark borders appear on lower leaves, causing leaf drop.",
-        "recommended_action": "Remove infected leaves and apply fungicides containing Mancozeb or Copper Hydroxide."
+        "description": "A fungal disease causing numerous small circular spots with gray centers on leaves.",
+        "recommended_action": "Remove infected leaves, apply chlorothalonil or mancozeb, mulch soil, and practice crop rotation.",
+        "severity": "Moderate"
     },
     "Tomato___Spider_mites Two-spotted_spider_mite": {
-        "disease": "Two-Spotted Spider Mite Infestation",
-        "description": "Tiny spider mites cause yellow speckling on leaves and fine webbing underneath.",
-        "recommended_action": "Spray insecticidal soap or neem oil. Increase humidity to reduce mite population."
+        "disease": "Spider Mites (Two-spotted)",
+        "description": "Tiny arachnids that cause stippling, yellowing, and webbing on leaves, sucking plant sap.",
+        "recommended_action": "Spray with neem oil or insecticidal soap. Increase humidity. Use predatory mites for biological control.",
+        "severity": "Moderate"
     },
     "Tomato___Target_Spot": {
         "disease": "Target Spot",
-        "description": "Circular spots with concentric rings appear on leaves, resembling a target pattern.",
-        "recommended_action": "Remove infected leaves and apply fungicides containing Chlorothalonil or Mancozeb."
+        "description": "A fungal disease causing target-like brown spots on leaves, stems, and fruit.",
+        "recommended_action": "Apply chlorothalonil or azoxystrobin fungicides. Remove infected plant debris and improve air circulation.",
+        "severity": "Moderate"
     },
     "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
         "disease": "Tomato Yellow Leaf Curl Virus",
-        "description": "Viral infection causing upward curling leaves and stunted growth.",
-        "recommended_action": "Control whitefly vectors and remove infected plants immediately."
+        "description": "A viral disease transmitted by whiteflies, causing upward leaf curling, yellowing, and stunted growth.",
+        "recommended_action": "Control whitefly vectors with insecticides or yellow sticky traps. Remove infected plants. Use virus-resistant varieties.",
+        "severity": "High"
     },
     "Tomato___Tomato_mosaic_virus": {
         "disease": "Tomato Mosaic Virus",
-        "description": "Leaves develop light and dark green mottled patterns, and fruit may be distorted.",
-        "recommended_action": "Avoid handling healthy plants after touching infected ones. Disinfect tools regularly."
+        "description": "A viral disease causing mottled light and dark green patterns on leaves, distorted growth, and reduced yield.",
+        "recommended_action": "Remove infected plants immediately. Disinfect tools. Plant resistant varieties. Control aphid vectors.",
+        "severity": "High"
     },
     "Tomato___healthy": {
         "disease": "Healthy",
-        "description": "Tomato plants have bright green leaves and firm, red fruits without spots or mold.",
-        "recommended_action": "Provide adequate spacing and regular watering to promote strong, healthy growth."
+        "description": "No disease detected. The tomato plant appears healthy.",
+        "recommended_action": "Maintain proper spacing, stake or cage plants, water at base, and monitor regularly for early disease detection.",
+        "severity": "None"
     }
 }
