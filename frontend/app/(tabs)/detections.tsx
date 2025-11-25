@@ -9,11 +9,11 @@ import { httpClient } from '../../src/services/http.client';
 import { useAuthStore } from '../../src/store/auth.store';
 import { TAB_BAR_HEIGHT, colors, commonStyles } from '../../styles';
 
-interface ReportUser { id: string; name: string; email?: string; avatar_url?: string }
+interface ReportUser { id: string; name: string; email?: string; avatar_url?: string; phone?: string; address?: string; is_verified?: boolean; is_active?: boolean; created_at?: string }
 interface ReportCrop { id: string; image_url?: string; scanned_at?: string }
 interface ReportDisease { id: string; name: string; description?: string }
 interface ReportSolution { id: string; description?: string }
-interface ReportItem { id: string; generated_at: string; created_at: string; user: ReportUser; crop: ReportCrop; disease: ReportDisease; solution: ReportSolution; is_varified?: boolean }
+interface ReportItem { id: string; generated_at: string; created_at: string; user: ReportUser; crop: ReportCrop; disease: ReportDisease; solution: ReportSolution; is_varified?: boolean; confidence?: number; severity?: string }
 interface ReportsPagination { page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }
 interface ReportsResponse { success: boolean; data: { items: ReportItem[]; pagination: ReportsPagination }; message?: string }
 
@@ -49,6 +49,7 @@ export default function DetectionsScreen() {
   const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
   const [verifySubmitting, setVerifySubmitting] = useState<Record<string, boolean>>({});
   const [previewUri, setPreviewUri] = useState<string | null>(null);
+  const [selectedUserForDetails, setSelectedUserForDetails] = useState<ReportUser | null>(null);
 
   const fetchReports = useCallback(async (nextPage: number, opts?: { replace?: boolean; isRefresh?: boolean }) => {
     const isRefresh = !!opts?.isRefresh;
@@ -79,7 +80,7 @@ export default function DetectionsScreen() {
   const onRefresh = useCallback(() => fetchReports(1, { replace: true, isRefresh: true }), [fetchReports]);
 
   const renderHeader = useMemo(() => (
-    <View style={[commonStyles.itemsCenter, commonStyles.mb8, { paddingHorizontal: 24, paddingTop: 16 }]}> 
+    <View style={[commonStyles.itemsCenter, commonStyles.mb8, { paddingHorizontal: 24, paddingTop: 16 }]}>
       <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 100, height: 100, backgroundColor: colors.secondary[100], borderRadius: 50 }, commonStyles.mb6]}>
         <Ionicons name="images" size={48} color={colors.secondary[500]} />
       </View>
@@ -95,19 +96,19 @@ export default function DetectionsScreen() {
           <TouchableOpacity onPress={() => { if (r.crop?.image_url) setPreviewUri(r.crop.image_url); }} activeOpacity={0.8}>
             <Image source={{ uri: r.crop?.image_url }} style={{ width: 82, height: 72, borderRadius: 12, backgroundColor: colors.neutral[200] }} />
           </TouchableOpacity>
-          <View style={[commonStyles.ml4, { flex: 1 }]}> 
-            <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsStart]}> 
+          <View style={[commonStyles.ml4, { flex: 1 }]}>
+            <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsStart]}>
               <Text style={[commonStyles.textBase, commonStyles.fontSemibold, { color: colors.neutral[900], flexShrink: 1 }]} numberOfLines={1}>{(r.disease?.name ?? 'Unknown').replace(/_/g, ' ')}</Text>
               <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>{formatRelative(r.generated_at)}</Text>
             </View>
             <Text style={[commonStyles.textSm, { color: colors.neutral[600], marginTop: 4 }]} numberOfLines={2}>{r.solution?.description ?? ''}</Text>
-            <View style={[commonStyles.flexRow, commonStyles.mt3, { gap: 8 }]}> 
-              <View style={{ paddingHorizontal: 10, paddingVertical: 2, backgroundColor: colors.primary[50], borderRadius: 999, borderWidth: 1, borderColor: colors.primary[200], display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={[commonStyles.textXs, { color: colors.primary[700], fontWeight: '600' }]}>Report</Text>
-              </View>
-              <View style={{ paddingHorizontal: 10, paddingVertical: 2, backgroundColor: colors.secondary[50], borderRadius: 999, borderWidth: 1, borderColor: colors.secondary[200], display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={[commonStyles.textXs, { color: colors.secondary[700], fontWeight: '600' }]}>{r.user?.name ?? 'User'}</Text>
-              </View>
+            <View style={[commonStyles.flexRow, commonStyles.mt3, { gap: 8, flexWrap: 'wrap' }]}>
+              {typeof r.confidence === 'number' && (
+                <View style={{ paddingHorizontal: 10, paddingVertical: 2, backgroundColor: colors.primary[50], borderRadius: 999, borderWidth: 1, borderColor: colors.primary[200], flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="analytics" size={12} color={colors.primary[600]} style={{ marginRight: 4 }} />
+                  <Text style={[commonStyles.textXs, { color: colors.primary[700], fontWeight: '600' }]}>{(r.confidence * 100).toFixed(1)}%</Text>
+                </View>
+              )}
 
               {user?.userType === 'expert' ? (
                 <View style={{ marginLeft: 'auto' }}>
@@ -142,11 +143,18 @@ export default function DetectionsScreen() {
                 </View>
               ) : null}
             </View>
+            <TouchableOpacity
+              onPress={() => setSelectedUserForDetails(r.user)}
+              activeOpacity={0.7}
+              style={{ paddingHorizontal: 15, paddingVertical: 6, backgroundColor: colors.secondary[50], borderRadius: 999, borderWidth: 1, borderColor: colors.secondary[200], alignItems: 'center', justifyContent: 'center', marginTop: 6, alignSelf: 'flex-start' }}
+            >
+              <Text style={[commonStyles.textXs, { color: colors.secondary[700], fontWeight: '600' }]}>{r.user?.name ?? 'User'}</Text>
+            </TouchableOpacity>
             <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 6 }]}>Generated: {new Date(r.generated_at).toLocaleString()}</Text>
             <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 2 }]}>Scanned: {new Date(r.crop?.scanned_at || r.created_at).toLocaleString()}</Text>
 
             {user?.userType === 'expert' ? (
-              <View style={[commonStyles.mt3, { width: '100%' }]}> 
+              <View style={[commonStyles.mt3, { width: '100%' }]}>
                 <Input
                   label="Feedback"
                   placeholder="Enter feedback for this report"
@@ -195,15 +203,15 @@ export default function DetectionsScreen() {
   const listEmpty = useMemo(() => (
     <View>
       {initialLoading ? (
-        <Card variant="outlined" padding="large" style={commonStyles.mb4}> 
-          <View style={[commonStyles.flexRow, commonStyles.itemsCenter]}> 
+        <Card variant="outlined" padding="large" style={commonStyles.mb4}>
+          <View style={[commonStyles.flexRow, commonStyles.itemsCenter]}>
             <ActivityIndicator color={colors.primary[600]} />
             <Text style={[commonStyles.textSm, commonStyles.ml3, { color: colors.neutral[600] }]}>Loading reports…</Text>
           </View>
         </Card>
       ) : error ? (
-        <Card variant="outlined" padding="large" style={commonStyles.mb4}> 
-          <View style={[commonStyles.itemsCenter]}> 
+        <Card variant="outlined" padding="large" style={commonStyles.mb4}>
+          <View style={[commonStyles.itemsCenter]}>
             <Ionicons name="alert-circle" size={48} color={colors.danger[600]} style={commonStyles.mb3} />
             <Text style={[commonStyles.textBase, { color: colors.danger[700] }, commonStyles.mb2]}>Failed to load reports</Text>
             <Text style={[commonStyles.textSm, { color: colors.neutral[600] }, commonStyles.mb4]}>{error}</Text>
@@ -213,8 +221,8 @@ export default function DetectionsScreen() {
           </View>
         </Card>
       ) : (
-        <Card variant="outlined" padding="large" style={commonStyles.mb4}> 
-          <View style={[commonStyles.itemsCenter]}> 
+        <Card variant="outlined" padding="large" style={commonStyles.mb4}>
+          <View style={[commonStyles.itemsCenter]}>
             <Ionicons name="images" size={64} color={colors.neutral[400]} style={commonStyles.mb4} />
             <Text style={[commonStyles.textLg, commonStyles.fontSemibold, { color: colors.neutral[700] }, commonStyles.mb2]}>No Reports</Text>
             <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter, commonStyles.mb4]}>No detection reports found.</Text>
@@ -261,6 +269,117 @@ export default function DetectionsScreen() {
           </TouchableOpacity>
         </Pressable>
       </Modal>
+
+      {/* User Details Modal */}
+      <Modal visible={!!selectedUserForDetails} transparent animationType="slide" onRequestClose={() => setSelectedUserForDetails(null)}>
+        <Pressable style={styles.userModalContainer} onPress={() => setSelectedUserForDetails(null)}>
+          <Pressable style={styles.userModalContent} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.userModalHeader}>
+              <Text style={[commonStyles.textLg, commonStyles.fontBold, { color: colors.neutral[900] }]}>User Details</Text>
+              <TouchableOpacity onPress={() => setSelectedUserForDetails(null)}>
+                <Ionicons name="close" size={24} color={colors.neutral[600]} />
+              </TouchableOpacity>
+            </View>
+
+            {selectedUserForDetails && (
+              <View style={{ paddingTop: 16 }}>
+                {/* Avatar */}
+                <View style={[commonStyles.itemsCenter, commonStyles.mb6]}>
+                  {selectedUserForDetails.avatar_url ? (
+                    <Image
+                      source={{ uri: selectedUserForDetails.avatar_url }}
+                      style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.neutral[200] }}
+                    />
+                  ) : (
+                    <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.neutral[200], alignItems: 'center', justifyContent: 'center' }}>
+                      <Ionicons name="person" size={48} color={colors.neutral[500]} />
+                    </View>
+                  )}
+                  <Text style={[commonStyles.textXl, commonStyles.fontBold, { color: colors.neutral[900], marginTop: 12 }]}>{selectedUserForDetails.name}</Text>
+                </View>
+
+                {/* User Information */}
+                <View style={{ gap: 12 }}>
+                  {selectedUserForDetails.email && (
+                    <View style={styles.userDetailRow}>
+                      <Ionicons name="mail" size={20} color={colors.primary[600]} />
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>Email</Text>
+                        <Text style={[commonStyles.textSm, { color: colors.neutral[800] }]}>{selectedUserForDetails.email}</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {selectedUserForDetails.phone && (
+                    <View style={styles.userDetailRow}>
+                      <Ionicons name="call" size={20} color={colors.primary[600]} />
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>Phone</Text>
+                        <Text style={[commonStyles.textSm, { color: colors.neutral[800] }]}>{selectedUserForDetails.phone}</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {selectedUserForDetails.address && (
+                    <View style={styles.userDetailRow}>
+                      <Ionicons name="location" size={20} color={colors.primary[600]} />
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>Address</Text>
+                        <Text style={[commonStyles.textSm, { color: colors.neutral[800] }]}>{selectedUserForDetails.address}</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  <View style={styles.userDetailRow}>
+                    <Ionicons name="shield-checkmark" size={20} color={colors.primary[600]} />
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                      <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>Account Status</Text>
+                      <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                        {selectedUserForDetails.is_verified ? (
+                          <View style={{ paddingHorizontal: 8, paddingVertical: 3, backgroundColor: colors.success[50], borderRadius: 12, borderWidth: 1, borderColor: colors.success[200] }}>
+                            <Text style={[commonStyles.textXs, { color: colors.success[700], fontWeight: '600' }]}>Verified</Text>
+                          </View>
+                        ) : (
+                          <View style={{ paddingHorizontal: 8, paddingVertical: 3, backgroundColor: colors.warning[50], borderRadius: 12, borderWidth: 1, borderColor: colors.warning[200] }}>
+                            <Text style={[commonStyles.textXs, { color: colors.warning[700], fontWeight: '600' }]}>Unverified</Text>
+                          </View>
+                        )}
+                        {selectedUserForDetails.is_active ? (
+                          <View style={{ paddingHorizontal: 8, paddingVertical: 3, backgroundColor: colors.success[50], borderRadius: 12, borderWidth: 1, borderColor: colors.success[200] }}>
+                            <Text style={[commonStyles.textXs, { color: colors.success[700], fontWeight: '600' }]}>Active</Text>
+                          </View>
+                        ) : (
+                          <View style={{ paddingHorizontal: 8, paddingVertical: 3, backgroundColor: colors.danger[50], borderRadius: 12, borderWidth: 1, borderColor: colors.danger[200] }}>
+                            <Text style={[commonStyles.textXs, { color: colors.danger[700], fontWeight: '600' }]}>Inactive</Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+
+                  {selectedUserForDetails.created_at && (
+                    <View style={styles.userDetailRow}>
+                      <Ionicons name="calendar" size={20} color={colors.primary[600]} />
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>Member Since</Text>
+                        <Text style={[commonStyles.textSm, { color: colors.neutral[800] }]}>{new Date(selectedUserForDetails.created_at).toLocaleDateString()}</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  <View style={styles.userDetailRow}>
+                    <Ionicons name="key" size={20} color={colors.primary[600]} />
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                      <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>User ID</Text>
+                      <Text style={[commonStyles.textXs, { color: colors.neutral[600], fontFamily: 'monospace' }]}>{selectedUserForDetails.id}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -290,5 +409,33 @@ const styles = StyleSheet.create({
   closeText: {
     color: '#fff',
     fontSize: 14,
+  },
+  userModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  userModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    maxHeight: '85%',
+  },
+  userModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.neutral[200],
+  },
+  userDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: colors.neutral[50],
+    borderRadius: 12,
   },
 });

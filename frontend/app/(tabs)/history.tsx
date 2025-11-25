@@ -14,7 +14,7 @@ import { TAB_BAR_HEIGHT, colors, commonStyles } from '../../styles';
 interface HistoryDisease { id: string; name: string; description: string; }
 interface HistorySolution { id: string; description: string; }
 interface HistoryCrop { id: string; image_url: string; disease_id: string; scanned_at: string; }
-interface HistoryReport { id: string; crop: HistoryCrop; disease: HistoryDisease; solution: HistorySolution; generated_at: string; is_varified?: boolean; feedback_id?: string | null }
+interface HistoryReport { id: string; crop: HistoryCrop; disease: HistoryDisease; solution: HistorySolution; generated_at: string; is_varified?: boolean; feedback_id?: string | null; confidence?: number; severity?: string }
 interface HistoryUser { id: string; name: string; email?: string; avatar_url?: string }
 interface HistoryItem { id: string; viewed_at: string; created_at: string; report: HistoryReport; user?: HistoryUser }
 interface HistoryPagination { page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean; }
@@ -221,7 +221,7 @@ export default function HistoryScreen() {
   // (FlatList Empty handled by listEmpty memo)
 
   const renderHeader = useMemo(() => (
-    <View style={[commonStyles.itemsCenter, commonStyles.mb8, { paddingHorizontal: 24, paddingTop: 16 }]}> 
+    <View style={[commonStyles.itemsCenter, commonStyles.mb8, { paddingHorizontal: 24, paddingTop: 16 }]}>
       <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 100, height: 100, backgroundColor: colors.secondary[100], borderRadius: 50 }, commonStyles.mb6]}>
         <Ionicons name="time" size={48} color={colors.secondary[500]} />
       </View>
@@ -235,27 +235,27 @@ export default function HistoryScreen() {
     const solution = h.report?.solution?.description || '';
     const expandedState = expanded.has(h.id);
     return (
-      <Card key={h.id} variant="default" padding="small" style={commonStyles.mb4}> 
+      <Card key={h.id} variant="default" padding="small" style={commonStyles.mb4}>
         <TouchableOpacity onPress={() => toggleExpand(h.id)} activeOpacity={0.85} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
           <TouchableOpacity onPress={() => { if (h.report?.crop?.image_url) setPreviewUri(h.report.crop.image_url); }} activeOpacity={0.8}>
             <Image source={{ uri: h.report?.crop?.image_url }} style={{ width: 82, height: 72, borderRadius: 12, backgroundColor: colors.neutral[200] }} />
           </TouchableOpacity>
-          <View style={[commonStyles.ml4, { flex: 1 }]}> 
-            <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsStart]}> 
+          <View style={[commonStyles.ml4, { flex: 1 }]}>
+            <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsStart]}>
               <Text style={[commonStyles.textBase, commonStyles.fontSemibold, { color: colors.neutral[900], flexShrink: 1 }]} numberOfLines={1}>{diseaseName.replace(/_/g, ' ')}</Text>
               <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>{formatRelative(h.viewed_at)}</Text>
             </View>
             <Text style={[commonStyles.textSm, { color: colors.neutral[600], marginTop: 4 }]} numberOfLines={expandedState ? undefined : 2}>{solution}</Text>
-            <View style={[commonStyles.flexRow, commonStyles.mt3, { gap: 8, alignItems: 'center' }]}> 
-              <View style={{ minWidth: 80 }}>
-                <Button
-                  title="Download"
-                  size="small"
-                  loading={!!pdfGenerating[h.id]}
-                  onPress={() => onDownloadReport(h)}
-                />
+            <View style={[commonStyles.flexRow, commonStyles.mt3, { gap: 8, alignItems: 'center' }]}>
+              <View style={{ marginLeft: 'auto', flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                {typeof h.report?.confidence === 'number' && (
+                  <View style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.primary[50], borderRadius: 999, borderWidth: 1, borderColor: colors.primary[200], flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="analytics" size={14} color={colors.primary[600]} />
+                    <Text style={[commonStyles.textXs, { color: colors.primary[700], fontWeight: '600', marginLeft: 6 }]}>{(h.report.confidence * 100).toFixed(1)}%</Text>
+                  </View>
+                )}
               </View>
-              <View style={{ marginLeft: 'auto' }}>
+              <View>
                 {h.report?.is_varified ? (
                   <View style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.success[50], borderRadius: 999, borderWidth: 1, borderColor: colors.success[200], flexDirection: 'row', alignItems: 'center' }}>
                     <Ionicons name="checkmark-circle" size={14} color={colors.success[600]} />
@@ -268,6 +268,15 @@ export default function HistoryScreen() {
                   </View>
                 )}
               </View>
+
+            </View>
+            <View style={{ minWidth: 80, marginTop: 6 }}>
+              <Button
+                title="Download"
+                size="small"
+                loading={!!pdfGenerating[h.id]}
+                onPress={() => onDownloadReport(h)}
+              />
             </View>
             <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 6 }]}>Scanned: {new Date(h.report?.crop?.scanned_at).toLocaleString()}</Text>
             <TouchableOpacity
@@ -292,34 +301,34 @@ export default function HistoryScreen() {
           </View>
         </TouchableOpacity>
         {expandedState && (
-          <View style={{ marginTop: 12 }}> 
+          <View style={{ marginTop: 12 }}>
             <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Disease Description</Text>
             <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{h.report?.disease?.description}</Text>
             <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800], marginTop: 12 }]}>Recommended Action</Text>
-              <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{solution}</Text>
-              {/** Feedback section */}
-              <View style={{ marginTop: 12 }}>
-                <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Expert Feedback</Text>
-                {feedbackLoading[h.report.id] ? (
-                  <View style={{ marginTop: 8 }}>
-                    <ActivityIndicator color={colors.primary[600]} />
-                  </View>
-                ) : (
-                  <View style={{ marginTop: 8 }}>
-                    {(reportFeedbacks[h.report.id] && reportFeedbacks[h.report.id].length > 0) ? (
-                      reportFeedbacks[h.report.id].map((f) => (
-                        <View key={f.id} style={{ marginBottom: 12, padding: 10, backgroundColor: colors.neutral[50], borderRadius: 8 }}>
-                          <Text style={[commonStyles.textSm, { color: colors.neutral[800], fontWeight: '600' }]}>{f.expert?.name || 'Expert'}</Text>
-                          <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{f.feedback_text}</Text>
-                          <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 6 }]}>{f.varified_at ? `${new Date(f.varified_at).toLocaleString()}` : `Created: ${new Date(f.created_at).toLocaleString()}`}</Text>
-                        </View>
-                      ))
-                    ) : (
-                      <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 6 }]}>No feedback available for this report.</Text>
-                    )}
-                  </View>
-                )}
-              </View>
+            <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{solution}</Text>
+            {/** Feedback section */}
+            <View style={{ marginTop: 12 }}>
+              <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Expert Feedback</Text>
+              {feedbackLoading[h.report.id] ? (
+                <View style={{ marginTop: 8 }}>
+                  <ActivityIndicator color={colors.primary[600]} />
+                </View>
+              ) : (
+                <View style={{ marginTop: 8 }}>
+                  {(reportFeedbacks[h.report.id] && reportFeedbacks[h.report.id].length > 0) ? (
+                    reportFeedbacks[h.report.id].map((f) => (
+                      <View key={f.id} style={{ marginBottom: 12, padding: 10, backgroundColor: colors.neutral[50], borderRadius: 8 }}>
+                        <Text style={[commonStyles.textSm, { color: colors.neutral[800], fontWeight: '600' }]}>{f.expert?.name || 'Expert'}</Text>
+                        <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{f.feedback_text}</Text>
+                        <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 6 }]}>{f.varified_at ? `${new Date(f.varified_at).toLocaleString()}` : `Created: ${new Date(f.created_at).toLocaleString()}`}</Text>
+                      </View>
+                    ))
+                  ) : (
+                    <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 6 }]}>No feedback available for this report.</Text>
+                  )}
+                </View>
+              )}
+            </View>
           </View>
         )}
       </Card>
@@ -329,15 +338,15 @@ export default function HistoryScreen() {
   const listEmpty = useMemo(() => (
     <View>
       {initialLoading ? (
-        <Card variant="outlined" padding="large" style={commonStyles.mb4}> 
-          <View style={[commonStyles.flexRow, commonStyles.itemsCenter]}> 
+        <Card variant="outlined" padding="large" style={commonStyles.mb4}>
+          <View style={[commonStyles.flexRow, commonStyles.itemsCenter]}>
             <ActivityIndicator color={colors.primary[600]} />
             <Text style={[commonStyles.textSm, commonStyles.ml3, { color: colors.neutral[600] }]}>Loading history…</Text>
           </View>
         </Card>
       ) : error ? (
-        <Card variant="outlined" padding="large" style={commonStyles.mb4}> 
-          <View style={[commonStyles.itemsCenter]}> 
+        <Card variant="outlined" padding="large" style={commonStyles.mb4}>
+          <View style={[commonStyles.itemsCenter]}>
             <Ionicons name="alert-circle" size={48} color={colors.danger[600]} style={commonStyles.mb3} />
             <Text style={[commonStyles.textBase, { color: colors.danger[700] }, commonStyles.mb2]}>Failed to load history</Text>
             <Text style={[commonStyles.textSm, { color: colors.neutral[600] }, commonStyles.mb4]}>{error}</Text>
@@ -347,12 +356,12 @@ export default function HistoryScreen() {
           </View>
         </Card>
       ) : (
-        <Card variant="outlined" padding="large" style={commonStyles.mb4}> 
-          <View style={[commonStyles.itemsCenter]}> 
+        <Card variant="outlined" padding="large" style={commonStyles.mb4}>
+          <View style={[commonStyles.itemsCenter]}>
             <Ionicons name="time-outline" size={64} color={colors.neutral[400]} style={commonStyles.mb4} />
             <Text style={[commonStyles.textLg, commonStyles.fontSemibold, { color: colors.neutral[700] }, commonStyles.mb2]}>No Scans Yet</Text>
             <Text style={[commonStyles.textBase, commonStyles.textSecondary, commonStyles.textCenter, commonStyles.mb4]}>You have no scan history yet. Start scanning crops to see them appear here.</Text>
-            <View style={[commonStyles.flexRow, commonStyles.itemsCenter, { backgroundColor: colors.primary[100], borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 }]}> 
+            <View style={[commonStyles.flexRow, commonStyles.itemsCenter, { backgroundColor: colors.primary[100], borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 }]}>
               <Ionicons name="camera" size={20} color={colors.primary[600]} style={commonStyles.mr2} />
               <Text style={[commonStyles.textSm, commonStyles.fontMedium, { color: colors.primary[600] }]}>Start Scanning</Text>
             </View>
@@ -411,7 +420,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 0,
     height: '100%',
-    width: '100%', 
+    width: '100%',
   },
   previewImage: {
     width: '100%',
