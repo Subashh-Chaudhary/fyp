@@ -47,6 +47,12 @@ export class Reports {
   @Column({ type: 'boolean', default: false })
   is_varified: boolean;
 
+  @Column({ type: 'float', nullable: true })
+  confidence: number | null;
+
+  @Column({ type: 'text', nullable: true })
+  severity: string | null;
+
   @Column({ type: 'timestamp with time zone', default: () => 'now()' })
   generated_at: Date;
 

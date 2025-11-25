@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Users } from '../../users/entities/users.entity';
+import { Diseases } from '../../diseases/entities/disease.entity';
 
 @Entity('crops')
 @Index(['user'])
@@ -26,6 +27,10 @@ export class Crops {
 
   @Column('uuid', { nullable: true })
   disease_id: string | null;
+
+  @ManyToOne(() => Diseases, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'disease_id' })
+  disease: Diseases | null;
 
   @Column({ type: 'timestamp with time zone', default: () => 'now()' })
   scanned_at: Date;

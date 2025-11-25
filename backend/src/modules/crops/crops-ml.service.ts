@@ -28,7 +28,7 @@ export class CropsMlService {
     private readonly usersRepository: Repository<Users>,
     @InjectRepository(Experts)
     private readonly expertsRepository: Repository<Experts>,
-  ) {}
+  ) { }
 
   async predictAndCreateCrop(dto: CreateCropDto, file: Express.Multer.File) {
     if (!file) throw new BadRequestException('Image file (file) is required');
@@ -115,6 +115,8 @@ export class CropsMlService {
       disease,
       solution: solution ?? null,
       report_url: null,
+      confidence: prediction.confidence,
+      severity: prediction.severity,
     });
     this.logger.log(`Created report id=${report.id} for crop id=${crop.id}`);
 

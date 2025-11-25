@@ -12,7 +12,7 @@ export class ReportsService {
   constructor(
     @InjectRepository(Reports) private readonly repo: Repository<Reports>,
     @InjectRepository(Users) private readonly usersRepo: Repository<Users>,
-  ) {}
+  ) { }
 
   async createReport(params: {
     user_id?: string | null;
@@ -20,8 +20,10 @@ export class ReportsService {
     disease: Diseases;
     solution?: Solutions | null;
     report_url?: string | null;
+    confidence?: number | null;
+    severity?: string | null;
   }): Promise<Reports> {
-    const { user_id, crop, disease, solution, report_url } = params;
+    const { user_id, crop, disease, solution, report_url, confidence, severity } = params;
     let user: Users | null = null;
     if (user_id) {
       user = await this.usersRepo.findOne({ where: { id: user_id } });
@@ -33,6 +35,8 @@ export class ReportsService {
       solution: solution ?? null,
       feedback_id: null,
       report_url: report_url ?? null,
+      confidence: confidence ?? null,
+      severity: severity ?? null,
       generated_at: new Date(),
     });
     return this.repo.save(entity);
