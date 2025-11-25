@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 # Configuration
-MODEL_PATH = "model/best_model.pth"
+MODEL_PATH = "model/final_model.pth"
 CLASS_NAMES_PATH = "model/class_names.json"
 DISEASE_INFO_PATH = "model/disease_info.json"
 IMG_SIZE = 224
