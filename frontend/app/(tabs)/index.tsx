@@ -8,105 +8,7 @@ import { TAB_BAR_HEIGHT, colors, commonStyles } from '../../styles';
 
 // (removed Sparkline in favor of MiniLineChart)
 
-// 100% stacked bar to preview category distribution
-const StackedBar: React.FC<{ parts: { value: number; color: string; label: string }[] }>
-  = ({ parts }) => {
-    const total = parts.reduce((s, p) => s + p.value, 0) || 1;
-    return (
-      <View>
-        <View style={{ flexDirection: 'row', height: 12, borderRadius: 6, overflow: 'hidden', backgroundColor: colors.neutral[200] }}>
-          {parts.map((p, i) => (
-            <View key={i} style={{ width: `${(p.value / total) * 100}%`, backgroundColor: p.color }} />
-          ))}
-        </View>
-        <View style={[commonStyles.flexRow, commonStyles.itemsCenter, { flexWrap: 'wrap', gap: 12 }, commonStyles.mt2]}>
-          {parts.map((p, i) => (
-            <View key={i} style={[commonStyles.flexRow, commonStyles.itemsCenter]}>
-              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: p.color, marginRight: 6 }} />
-              <Text style={[commonStyles.textSm, commonStyles.textSecondary]}>{p.label} ({Math.round((p.value / total) * 100)}%)</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-    );
-  };
-
-// Minimal line chart using Views (no external deps)
-const MiniLineChart: React.FC<{ data: number[]; width?: number; height?: number; color?: string; thickness?: number }>
-  = ({ data, width = 180, height = 60, color = colors.primary[600], thickness = 2 }) => {
-    if (!data || data.length < 2) return null;
-    const max = Math.max(...data, 1);
-    const min = Math.min(...data, 0);
-    const range = Math.max(1, max - min);
-    const points = data.map((v, i) => {
-      const x = (i / (data.length - 1)) * width;
-      const y = height - ((v - min) / range) * height;
-      return { x, y };
-    });
-    return (
-      <View style={{ width, height }}>
-        {/* segments */}
-        {points.slice(0, -1).map((p, i) => {
-          const p2 = points[i + 1];
-          const dx = p2.x - p.x;
-          const dy = p2.y - p.y;
-          const len = Math.sqrt(dx * dx + dy * dy);
-          const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-          return (
-            <View
-              key={i}
-              style={{
-                position: 'absolute',
-                left: p.x,
-                top: p.y,
-                width: len,
-                height: thickness,
-                backgroundColor: color,
-                transform: [{ rotateZ: `${angle}deg` }],
-                borderRadius: thickness,
-              }}
-            />
-          );
-        })}
-        {/* points */}
-        {points.map((p, i) => (
-          <View
-            key={`pt-${i}`}
-            style={{
-              position: 'absolute',
-              left: p.x - 2.5,
-              top: p.y - 2.5,
-              width: 5,
-              height: 5,
-              borderRadius: 3,
-              backgroundColor: color,
-            }}
-          />
-        ))}
-      </View>
-    );
-  };
-
-// Grid pattern for charts (light, non-intrusive)
-const PatternGrid: React.FC<{ width: number; height: number; gap?: number; color?: string; opacity?: number }>
-  = ({ width, height, gap = 16, color = colors.neutral[300], opacity = 0.25 }) => {
-    const vCount = Math.floor(width / gap);
-    const hCount = Math.floor(height / gap);
-    const lines = [] as React.ReactNode[];
-    for (let i = 0; i <= vCount; i++) {
-      const left = i * gap;
-      lines.push(
-        <View key={`v-${i}`} style={{ position: 'absolute', left, top: 0, width: 1, height, backgroundColor: color, opacity }} />
-      );
-    }
-    for (let i = 0; i <= hCount; i++) {
-      const top = i * gap;
-      lines.push(
-        <View key={`h-${i}`} style={{ position: 'absolute', left: 0, top, width, height: 1, backgroundColor: color, opacity }} />
-      );
-    }
-    return <View style={{ width, height, position: 'absolute', left: 0, top: 0 }}>{lines}</View>;
-  };
+// (removed chart components as they are no longer used)
 
 export default function HomeScreen() {
   const heroHeight = Math.min(350, Math.max(360, Dimensions.get('window').height * 0.6));
@@ -119,12 +21,12 @@ export default function HomeScreen() {
       >
         {/* Clean top header with system title */}
         <View style={[commonStyles.mb2, { paddingVertical: 8 }]}>
-            <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb2]}>
-              <View style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
-                <Ionicons name="leaf" size={20} color={colors.primary[600]} />
-              </View>
-              <Text style={[commonStyles.textLg, commonStyles.fontBold, commonStyles.textPrimary]}>Crop Disease Detection System</Text>
+          <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb2]}>
+            <View style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+              <Ionicons name="leaf" size={20} color={colors.primary[600]} />
             </View>
+            <Text style={[commonStyles.textLg, commonStyles.fontBold, commonStyles.textPrimary]}>Crop Disease Detection System</Text>
+          </View>
         </View>
 
         {/* Immersive hero: split layout (left text, right image) with full height */}
@@ -200,22 +102,19 @@ export default function HomeScreen() {
 
               <Card variant="outlined" padding="medium" style={{ flex: 1, marginLeft: 8 }}>
                 <View style={{ minHeight: 132, justifyContent: 'space-between' }}>
-                  <View style={{overflow: 'hidden'}}>
+                  <View style={{ overflow: 'hidden' }}>
                     <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb2]}>
-                          <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 36, height: 36, borderRadius: 8, backgroundColor: colors.secondary[100] }, commonStyles.mr2]}>
-                            <Ionicons name="analytics-outline" size={18} color={colors.secondary[700]} />
-                          </View>
-                          <Text style={[commonStyles.textBase, commonStyles.fontSemibold, commonStyles.textPrimary, {flexShrink: 1}]}>Insights & trends</Text>
-                        </View>
+                      <View style={[commonStyles.itemsCenter, commonStyles.justifyCenter, { width: 36, height: 36, borderRadius: 8, backgroundColor: colors.secondary[100] }, commonStyles.mr2]}>
+                        <Ionicons name="analytics-outline" size={18} color={colors.secondary[700]} />
+                      </View>
+                      <Text style={[commonStyles.textBase, commonStyles.fontSemibold, commonStyles.textPrimary, { flexShrink: 1 }]}>Insights & trends</Text>
+                    </View>
                     <Text style={[commonStyles.textSm, commonStyles.textSecondary]}>
                       Track disease patterns and crop health over time with clear visuals.
                     </Text>
                   </View>
-                  <View style={{ marginTop: 8, width: 125, height: 48, position: 'relative' }}>
-                    <PatternGrid width={125} height={48} gap={16} color={colors.neutral[300]} opacity={0.25} />
-                    <View style={{ position: 'absolute', left: 0, top: 0 }}>
-                      <MiniLineChart data={[5, 12, 9, 15, 11, 16, 22, 18,25 ]} width={125} height={48} color={colors.secondary[600]} />
-                    </View>
+                  <View style={{ marginTop: 8, width: 125, height: 48, position: 'relative', justifyContent: 'center' }}>
+                    <Text style={[commonStyles.textXs, commonStyles.textSecondary]}>View detailed analytics</Text>
                   </View>
                 </View>
               </Card>
@@ -236,7 +135,7 @@ export default function HomeScreen() {
                     </Text>
                   </View>
                   <View style={{ marginTop: 8 }}>
-                    <StackedBar parts={[{ value: 70, color: colors.success[500], label: 'Effective' }, { value: 30, color: colors.neutral[300], label: 'Pending' }]} />
+                    <Text style={[commonStyles.textXs, { color: colors.success[600] }]}>Verified Solutions</Text>
                   </View>
                 </View>
               </Card>
@@ -268,29 +167,87 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Analytics */}
+        {/* Model Performance */}
         <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb3]}>
           <View style={{ width: 4, height: 18, backgroundColor: colors.primary[500], borderRadius: 2, marginRight: 8 }} />
-          <Text style={[commonStyles.textLg, commonStyles.fontSemibold, commonStyles.textPrimary]}>Analytics</Text>
+          <Text style={[commonStyles.textLg, commonStyles.fontSemibold, commonStyles.textPrimary]}>Model Performance</Text>
         </View>
-        {/* Analytics Preview */}
+
         <View style={commonStyles.mb6}>
           <Card variant="default" padding="medium" style={commonStyles.mb4}>
-            <Text style={[commonStyles.textSm, commonStyles.textSecondary, commonStyles.mb2]}>Crop health trend</Text>
-            <MiniLineChart data={[30, 45, 35, 55, 60, 50, 70, 65, 80]} width={240} height={72} color={colors.primary[600]} />
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', margin: -8 }}>
+              <View style={{ width: '50%', padding: 8 }}>
+                <View style={{ padding: 12, backgroundColor: colors.success[50], borderRadius: 12, borderWidth: 1, borderColor: colors.success[100] }}>
+                  <Text style={[commonStyles.textXs, commonStyles.textSecondary, { marginBottom: 4 }]}>Validation Accuracy</Text>
+                  <Text style={[commonStyles.textXl, commonStyles.fontBold, { color: colors.success[700] }]}>99.83%</Text>
+                </View>
+              </View>
+              <View style={{ width: '50%', padding: 8 }}>
+                <View style={{ padding: 12, backgroundColor: colors.primary[50], borderRadius: 12, borderWidth: 1, borderColor: colors.primary[100] }}>
+                  <Text style={[commonStyles.textXs, commonStyles.textSecondary, { marginBottom: 4 }]}>Training Accuracy</Text>
+                  <Text style={[commonStyles.textXl, commonStyles.fontBold, { color: colors.primary[700] }]}>99.77%</Text>
+                </View>
+              </View>
+              <View style={{ width: '50%', padding: 8 }}>
+                <View style={{ padding: 12, backgroundColor: colors.neutral[50], borderRadius: 12, borderWidth: 1, borderColor: colors.neutral[200] }}>
+                  <Text style={[commonStyles.textXs, commonStyles.textSecondary, { marginBottom: 4 }]}>Validation Loss</Text>
+                  <Text style={[commonStyles.textLg, commonStyles.fontBold, { color: colors.neutral[700] }]}>0.0070</Text>
+                </View>
+              </View>
+              <View style={{ width: '50%', padding: 8 }}>
+                <View style={{ padding: 12, backgroundColor: colors.neutral[50], borderRadius: 12, borderWidth: 1, borderColor: colors.neutral[200] }}>
+                  <Text style={[commonStyles.textXs, commonStyles.textSecondary, { marginBottom: 4 }]}>Training Loss</Text>
+                  <Text style={[commonStyles.textLg, commonStyles.fontBold, { color: colors.neutral[700] }]}>0.0069</Text>
+                </View>
+              </View>
+            </View>
+            <View style={{ marginTop: 8, padding: 12, backgroundColor: colors.secondary[50], borderRadius: 12, borderWidth: 1, borderColor: colors.secondary[100], flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.secondary[800] }]}>Top-3 Accuracy</Text>
+              <Text style={[commonStyles.textLg, commonStyles.fontBold, { color: colors.secondary[700] }]}>99.95%+</Text>
+            </View>
           </Card>
+        </View>
 
-          <Card variant="default" padding="medium">
-            <Text style={[commonStyles.textSm, commonStyles.textSecondary, commonStyles.mb2]}>Detected disease categories</Text>
-            <StackedBar
-              parts={[
-                { value: 35, color: colors.primary[500], label: 'Fungal' },
-                { value: 25, color: colors.secondary[500], label: 'Bacterial' },
-                { value: 20, color: colors.success[500], label: 'Viral' },
-                { value: 20, color: colors.neutral[400], label: 'Nutrient' },
-              ]}
-            />
-          </Card>
+        {/* Supported Crops */}
+        <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb3]}>
+          <View style={{ width: 4, height: 18, backgroundColor: colors.primary[500], borderRadius: 2, marginRight: 8 }} />
+          <Text style={[commonStyles.textLg, commonStyles.fontSemibold, commonStyles.textPrimary]}>Supported Crops & Diseases</Text>
+        </View>
+
+        <View style={commonStyles.mb6}>
+          {[
+            { name: 'Apple', diseases: 'Apple Scab, Black Rot, Cedar Apple Rust, Healthy', count: 4 },
+            { name: 'Blueberry', diseases: 'Healthy', count: 1 },
+            { name: 'Cherry', diseases: 'Powdery Mildew, Healthy', count: 2 },
+            { name: 'Corn (Maize)', diseases: 'Gray Leaf Spot, Common Rust, Northern Leaf Blight, Healthy', count: 4 },
+            { name: 'Grape', diseases: 'Black Rot, Esca, Leaf Blight, Healthy', count: 4 },
+            { name: 'Orange', diseases: 'Huanglongbing (Citrus Greening)', count: 1 },
+            { name: 'Peach', diseases: 'Bacterial Spot, Healthy', count: 2 },
+            { name: 'Pepper (Bell)', diseases: 'Bacterial Spot, Healthy', count: 2 },
+            { name: 'Potato', diseases: 'Early Blight, Late Blight, Healthy', count: 3 },
+            { name: 'Raspberry', diseases: 'Healthy', count: 1 },
+            { name: 'Soybean', diseases: 'Healthy', count: 1 },
+            { name: 'Squash', diseases: 'Powdery Mildew', count: 1 },
+            { name: 'Strawberry', diseases: 'Leaf Scorch, Healthy', count: 2 },
+            { name: 'Tomato', diseases: 'Bacterial Spot, Early Blight, Late Blight, Leaf Mold, Septoria Leaf Spot, Spider Mites, Target Spot, Yellow Leaf Curl Virus, Mosaic Virus, Healthy', count: 10 },
+          ].map((crop, index) => (
+            <Card key={index} variant="outlined" padding="medium" style={{ marginBottom: 12 }}>
+              <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsCenter, commonStyles.mb2]}>
+                <View style={[commonStyles.flexRow, commonStyles.itemsCenter]}>
+                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary[50], alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+                    <Ionicons name="leaf" size={16} color={colors.primary[600]} />
+                  </View>
+                  <Text style={[commonStyles.textBase, commonStyles.fontSemibold, commonStyles.textPrimary]}>{crop.name}</Text>
+                </View>
+                <View style={{ paddingHorizontal: 8, paddingVertical: 2, backgroundColor: colors.neutral[100], borderRadius: 12 }}>
+                  <Text style={[commonStyles.textXs, commonStyles.fontMedium, { color: colors.neutral[600] }]}>{crop.count} Classes</Text>
+                </View>
+              </View>
+              <Text style={[commonStyles.textSm, { color: colors.neutral[600], lineHeight: 20 }]}>
+                {crop.diseases}
+              </Text>
+            </Card>
+          ))}
         </View>
 
         {/* Footer (minimal, non-overlapping) */}

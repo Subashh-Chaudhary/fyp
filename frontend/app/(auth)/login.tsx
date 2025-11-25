@@ -213,7 +213,7 @@ export default function LoginScreen() {
             </View>
 
             {/* Social Login */}
-            <View style={[commonStyles.mb6]}>
+            {/* <View style={[commonStyles.mb6]}>
               <Text style={[commonStyles.textBase, commonStyles.fontMedium, commonStyles.textSecondary, commonStyles.textCenter, commonStyles.mb4]}>
                 Or continue with
               </Text>
@@ -273,7 +273,7 @@ export default function LoginScreen() {
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            </View> */}
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
