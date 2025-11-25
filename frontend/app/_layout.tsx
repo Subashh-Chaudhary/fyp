@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { AnimatedSplashScreen } from '../components/AnimatedSplashScreen';
 import { AppProvider } from '../src/providers/app.provider';
 
 // Keep the splash screen visible while we fetch resources
@@ -24,6 +25,9 @@ export default function RootLayout() {
         // Hide splash screen
         await SplashScreen.hideAsync();
 
+        // Show animated splash screen for 2.5 seconds
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
         // Mark app as ready
         setIsReady(true);
       } catch (error) {
@@ -37,7 +41,7 @@ export default function RootLayout() {
 
   // Don't render anything until app is ready
   if (!isReady) {
-    return null;
+    return <AnimatedSplashScreen />;
   }
 
   return (
