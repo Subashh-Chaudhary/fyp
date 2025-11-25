@@ -47,6 +47,7 @@ export default function HistoryScreen() {
   const [pdfGenerating, setPdfGenerating] = useState<Record<string, boolean>>({});
   const [reportFeedbacks, setReportFeedbacks] = useState<Record<string, FeedbackItem[]>>({});
   const [feedbackLoading, setFeedbackLoading] = useState<Record<string, boolean>>({});
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackItem | null>(null);
 
   const generateReportHtml = (h: HistoryItem, expert?: any) => {
     const user = (h as any).user || { name: 'User', email: '' };
@@ -159,15 +160,34 @@ export default function HistoryScreen() {
   };
 
   const fetchReportFeedbacks = useCallback(async (reportId: string) => {
-    if (!reportId) return;
-    if (reportFeedbacks[reportId] || feedbackLoading[reportId]) return;
+    console.log('[History] fetchReportFeedbacks called with reportId:', reportId);
+    if (!reportId) {
+      console.log('[History] No reportId provided, returning');
+      return;
+    }
+    if (reportFeedbacks[reportId]) {
+      console.log('[History] Feedbacks already loaded for report:', reportId);
+      return;
+    }
+    if (feedbackLoading[reportId]) {
+      console.log('[History] Already loading feedbacks for report:', reportId);
+      return;
+    }
+
+    console.log('[History] Starting to fetch feedbacks for report:', reportId);
     setFeedbackLoading((s) => ({ ...s, [reportId]: true }));
     try {
-      const res = await httpClient.get<{ success: boolean; data: { items: FeedbackItem[] } }>(`/reports/${reportId}/feedbacks`);
+      const url = `/reports/${reportId}/feedbacks`;
+      console.log('[History] Fetching from URL:', url);
+      const res = await httpClient.get<{ success: boolean; data: { items: FeedbackItem[] } }>(url);
+      console.log('[History] Feedback response:', res);
       const items = res?.data?.items || [];
+      console.log('[History] Setting feedbacks, count:', items.length);
       setReportFeedbacks((s) => ({ ...s, [reportId]: items }));
     } catch (e: any) {
-      // ignore silently - optional
+      console.error('[History] Error fetching feedbacks:', e);
+      // Set empty array so we don't keep trying
+      setReportFeedbacks((s) => ({ ...s, [reportId]: [] }));
     } finally {
       setFeedbackLoading((s) => ({ ...s, [reportId]: false }));
     }
@@ -300,40 +320,120 @@ export default function HistoryScreen() {
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
+
+
+        {/* Report Details - Full Width */}
+        <View style={{ backgroundColor: colors.neutral[50], borderRadius: 0, padding: 16, marginHorizontal: -8, marginTop: 12 }}>
+          <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsCenter, commonStyles.mb3]}>
+            <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Report Status</Text>
+            {h.report?.is_varified ? (
+              <View style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.success[50], borderRadius: 999, borderWidth: 1, borderColor: colors.success[200], flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="checkmark-circle" size={14} color={colors.success[600]} />
+                <Text style={[commonStyles.textXs, { color: colors.success[700], fontWeight: '600', marginLeft: 6 }]}>Verified</Text>
+              </View>
+            ) : (
+              <View style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.warning[50], borderRadius: 999, borderWidth: 1, borderColor: colors.warning[200], flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="alert-circle" size={14} color={colors.warning[600]} />
+                <Text style={[commonStyles.textXs, { color: colors.warning[700], fontWeight: '600', marginLeft: 6 }]}>Pending Verification</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Disease and Solution Details */}
+          <View style={{ marginTop: 12, marginBottom: 12 }}>
+            <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.neutral[200] }}>
+              <View style={[commonStyles.flexRow, commonStyles.itemsCenter, { marginBottom: 8 }]}>
+                <Ionicons name="medkit" size={18} color={colors.primary[600]} style={{ marginRight: 8 }} />
+                <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Disease Information</Text>
+              </View>
+              <Text style={[commonStyles.textSm, { color: colors.neutral[700], lineHeight: 20 }]}>{h.report?.disease?.description || 'No description available'}</Text>
+            </View>
+
+            <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.neutral[200], marginTop: 8 }}>
+              <View style={[commonStyles.flexRow, commonStyles.itemsCenter, { marginBottom: 8 }]}>
+                <Ionicons name="bulb" size={18} color={colors.success[600]} style={{ marginRight: 8 }} />
+                <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Recommended Solution</Text>
+              </View>
+              <Text style={[commonStyles.textSm, { color: colors.neutral[700], lineHeight: 20 }]}>{solution}</Text>
+            </View>
+          </View>
+
+          {/* Fetch Feedbacks Button */}
+          {!reportFeedbacks[h.report.id] && !feedbackLoading[h.report.id] && (
+            <TouchableOpacity
+              onPress={() => fetchReportFeedbacks(h.report.id)}
+              style={{ paddingVertical: 8, paddingHorizontal: 12, backgroundColor: colors.primary[50], borderRadius: 8, borderWidth: 1, borderColor: colors.primary[200], flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Ionicons name="chatbox-ellipses" size={16} color={colors.primary[600]} style={{ marginRight: 6 }} />
+              <Text style={[commonStyles.textSm, { color: colors.primary[700], fontWeight: '600' }]}>View Feedback</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Loading State */}
+          {feedbackLoading[h.report.id] && (
+            <View style={{ paddingVertical: 12, alignItems: 'center' }}>
+              <ActivityIndicator color={colors.primary[600]} />
+            </View>
+          )}
+
+          {/* Feedback Display */}
+          {reportFeedbacks[h.report.id] && (
+            <View style={{ marginTop: 8 }}>
+              {reportFeedbacks[h.report.id].length > 0 ? (
+                <View>
+                  <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[700], marginBottom: 8 }]}>Expert Feedback ({reportFeedbacks[h.report.id].length})</Text>
+                  {reportFeedbacks[h.report.id].map((feedback) => (
+                    <View key={feedback.id} style={{ marginBottom: 12, padding: 12, backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: colors.neutral[200] }}>
+                      <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsStart, commonStyles.mb2]}>
+                        <View style={[commonStyles.flexRow, commonStyles.itemsCenter, { flex: 1 }]}>
+                          {feedback.expert?.avatar_url ? (
+                            <Image source={{ uri: feedback.expert.avatar_url }} style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: colors.neutral[200], marginRight: 8 }} />
+                          ) : (
+                            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: colors.neutral[200], alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
+                              <Ionicons name="person" size={14} color={colors.neutral[500]} />
+                            </View>
+                          )}
+                          <View style={{ flex: 1 }}>
+                            <Text style={[commonStyles.textSm, { color: colors.neutral[800], fontWeight: '600' }]}>{feedback.expert?.name || 'Expert'}</Text>
+                            {feedback.expert?.email && (
+                              <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>{feedback.expert.email}</Text>
+                            )}
+                          </View>
+                        </View>
+                      </View>
+                      <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]} numberOfLines={3}>{feedback.feedback_text}</Text>
+                      <View style={[commonStyles.flexRow, commonStyles.justifyBetween, commonStyles.itemsCenter, { marginTop: 8 }]}>
+                        <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>{feedback.varified_at ? new Date(feedback.varified_at).toLocaleDateString() : new Date(feedback.created_at).toLocaleDateString()}</Text>
+                        <TouchableOpacity
+                          onPress={() => setSelectedFeedback(feedback)}
+                          style={{ paddingVertical: 4, paddingHorizontal: 10, backgroundColor: colors.primary[50], borderRadius: 6, borderWidth: 1, borderColor: colors.primary[200] }}
+                        >
+                          <Text style={[commonStyles.textXs, { color: colors.primary[700], fontWeight: '600' }]}>View Full</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+                  <Ionicons name="chatbox-outline" size={32} color={colors.neutral[400]} style={{ marginBottom: 8 }} />
+                  <Text style={[commonStyles.textSm, { color: colors.neutral[600] }]}>No feedback available for this report</Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
         {expandedState && (
           <View style={{ marginTop: 12 }}>
             <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Disease Description</Text>
             <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{h.report?.disease?.description}</Text>
             <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800], marginTop: 12 }]}>Recommended Action</Text>
             <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{solution}</Text>
-            {/** Feedback section */}
-            <View style={{ marginTop: 12 }}>
-              <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[800] }]}>Expert Feedback</Text>
-              {feedbackLoading[h.report.id] ? (
-                <View style={{ marginTop: 8 }}>
-                  <ActivityIndicator color={colors.primary[600]} />
-                </View>
-              ) : (
-                <View style={{ marginTop: 8 }}>
-                  {(reportFeedbacks[h.report.id] && reportFeedbacks[h.report.id].length > 0) ? (
-                    reportFeedbacks[h.report.id].map((f) => (
-                      <View key={f.id} style={{ marginBottom: 12, padding: 10, backgroundColor: colors.neutral[50], borderRadius: 8 }}>
-                        <Text style={[commonStyles.textSm, { color: colors.neutral[800], fontWeight: '600' }]}>{f.expert?.name || 'Expert'}</Text>
-                        <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 4 }]}>{f.feedback_text}</Text>
-                        <Text style={[commonStyles.textXs, { color: colors.neutral[500], marginTop: 6 }]}>{f.varified_at ? `${new Date(f.varified_at).toLocaleString()}` : `Created: ${new Date(f.created_at).toLocaleString()}`}</Text>
-                      </View>
-                    ))
-                  ) : (
-                    <Text style={[commonStyles.textSm, { color: colors.neutral[700], marginTop: 6 }]}>No feedback available for this report.</Text>
-                  )}
-                </View>
-              )}
-            </View>
           </View>
         )}
       </Card>
     );
-  }, [expanded, toggleExpand]);
+  }, [expanded, toggleExpand, reportFeedbacks, feedbackLoading, fetchReportFeedbacks, setSelectedFeedback, user, pdfGenerating, onDownloadReport]);
 
   const listEmpty = useMemo(() => (
     <View>
@@ -408,6 +508,81 @@ export default function HistoryScreen() {
           </TouchableOpacity>
         </Pressable>
       </Modal>
+
+      {/* Feedback Details Modal */}
+      <Modal visible={!!selectedFeedback} transparent animationType="fade" onRequestClose={() => setSelectedFeedback(null)}>
+        <Pressable style={styles.modalContainer} onPress={() => setSelectedFeedback(null)}>
+          <Pressable style={styles.feedbackModalContent} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.modalHeader}>
+              <Text style={[commonStyles.textLg, commonStyles.fontBold, { color: colors.neutral[900] }]}>Feedback Details</Text>
+              <TouchableOpacity onPress={() => setSelectedFeedback(null)}>
+                <Ionicons name="close" size={24} color={colors.neutral[600]} />
+              </TouchableOpacity>
+            </View>
+
+            {selectedFeedback && (
+              <View style={{ paddingTop: 16 }}>
+                {/* Expert Info */}
+                <View style={[commonStyles.flexRow, commonStyles.itemsCenter, commonStyles.mb4]}>
+                  {selectedFeedback.expert?.avatar_url ? (
+                    <Image
+                      source={{ uri: selectedFeedback.expert.avatar_url }}
+                      style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.neutral[200], marginRight: 12 }}
+                    />
+                  ) : (
+                    <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.neutral[200], alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                      <Ionicons name="person" size={24} color={colors.neutral[500]} />
+                    </View>
+                  )}
+                  <View>
+                    <Text style={[commonStyles.textBase, commonStyles.fontSemibold, { color: colors.neutral[900] }]}>{selectedFeedback.expert?.name || 'Expert'}</Text>
+                    {selectedFeedback.expert?.email && (
+                      <Text style={[commonStyles.textSm, { color: colors.neutral[600] }]}>{selectedFeedback.expert.email}</Text>
+                    )}
+                  </View>
+                </View>
+
+                {/* Feedback Text */}
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={[commonStyles.textSm, commonStyles.fontSemibold, { color: colors.neutral[700], marginBottom: 8 }]}>Feedback</Text>
+                  <View style={{ padding: 16, backgroundColor: colors.neutral[50], borderRadius: 12, borderWidth: 1, borderColor: colors.neutral[200] }}>
+                    <Text style={[commonStyles.textSm, { color: colors.neutral[800], lineHeight: 20 }]}>{selectedFeedback.feedback_text}</Text>
+                  </View>
+                </View>
+
+                {/* Metadata */}
+                <View style={{ gap: 12 }}>
+                  <View style={styles.detailRow}>
+                    <Ionicons name="calendar" size={20} color={colors.primary[600]} />
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                      <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>Created</Text>
+                      <Text style={[commonStyles.textSm, { color: colors.neutral[800] }]}>{new Date(selectedFeedback.created_at).toLocaleString()}</Text>
+                    </View>
+                  </View>
+
+                  {selectedFeedback.varified_at && (
+                    <View style={styles.detailRow}>
+                      <Ionicons name="checkmark-circle" size={20} color={colors.success[600]} />
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>Verified</Text>
+                        <Text style={[commonStyles.textSm, { color: colors.neutral[800] }]}>{new Date(selectedFeedback.varified_at).toLocaleString()}</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  <View style={styles.detailRow}>
+                    <Ionicons name="key" size={20} color={colors.primary[600]} />
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                      <Text style={[commonStyles.textXs, { color: colors.neutral[500] }]}>Feedback ID</Text>
+                      <Text style={[commonStyles.textXs, { color: colors.neutral[600], fontFamily: 'monospace' }]}>{selectedFeedback.id}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -439,5 +614,31 @@ const styles = StyleSheet.create({
   closeText: {
     color: '#fff',
     fontSize: 14,
+  },
+  feedbackModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    maxHeight: '75%',
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.neutral[200],
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: colors.neutral[50],
+    borderRadius: 12,
   },
 });
